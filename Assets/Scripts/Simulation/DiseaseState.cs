@@ -3,28 +3,34 @@
 //represents a single bucket in a compartment model
 
 namespace CJSim {
-	struct DiseaseState {
-		int[] state;
+	public struct DiseaseState {
+		private int[] m_state;
 		
 		//The only constructor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
-			state = new int[stateCount];
+			m_state = new int[stateCount];
 			
 			setToZero();
 		}
 
+		//Allow for indexing this struct directly
+		public int this[int index] {
+			get {return m_state[index];}
+			set {m_state[index] = value;}
+		}
+
 		//Copy constructor, this struct contains reference type that need to be explicitly copied
 		public DiseaseState(DiseaseState other) {
-			state = new int[other.stateCount];
+			m_state = new int[other.stateCount];
 			for (int q = 0; q< other.stateCount; q++) {
-				state[q] = other.state[q];
+				m_state[q] = other.m_state[q];
 			}
 		}
 
 		//Shorthand for getting the number of states (compartments)
 		public int stateCount {
 			get {
-				return state.Length;
+				return m_state.Length;
 			}
 		}
 
@@ -35,7 +41,7 @@ namespace CJSim {
 				//As it would turn out, yes
 				int ret = 0;
 				for (int q = 0; q < stateCount; q++) {
-					ret += state[q];
+					ret += m_state[q];
 				}
 				return ret;
 			}
@@ -44,7 +50,7 @@ namespace CJSim {
 		//Sets every value in the state array to zero
 		public void setToZero() {
 			for (int q = 0; q < stateCount; q++) {
-				state[q] = 0;
+				m_state[q] = 0;
 			}
 		}
 	}
