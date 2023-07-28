@@ -4,7 +4,7 @@
 
 
 namespace CJSim {
-    class SimAlgorithms {
+	class SimAlgorithms {
 
-    }
+	}
 }

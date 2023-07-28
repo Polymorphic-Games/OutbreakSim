@@ -4,7 +4,7 @@
 //Operates on an array of cells and handles movement between them
 
 namespace CJSim {
-    class SimCore {
+	class SimCore {
 
-    }
+	}
 }

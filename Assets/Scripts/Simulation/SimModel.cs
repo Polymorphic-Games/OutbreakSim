@@ -4,12 +4,12 @@
 //Holds information relating to disease states, algorithms, etc.
 
 namespace CJSim {
-    class SimModel {
+	class SimModel {
 
 
-        SimModel(int compartmentCount, int reactionCount) {
+		SimModel(int compartmentCount, int reactionCount) {
 
-        }
+		}
 
-    }
+	}
 }
