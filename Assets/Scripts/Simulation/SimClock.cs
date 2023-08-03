@@ -6,5 +6,9 @@
 namespace CJSim {
 	class SimClock {
 
+		//Should be called in a Unity Update() function
+		public void ManualUpdate() {
+			
+		}
 	}
 }
