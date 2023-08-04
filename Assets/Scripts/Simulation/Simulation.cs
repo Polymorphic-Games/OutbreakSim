@@ -5,5 +5,8 @@
 namespace CJSim {
 	public class Simulation {
 
+		public Simulation(SimFeeder feeder) {
+			
+		}
 	}
 }
