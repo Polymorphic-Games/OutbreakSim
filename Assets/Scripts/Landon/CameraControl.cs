@@ -1,32 +1,37 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-
-using UnityEngine.InputSystem.EnhancedTouch;
 using Touch = UnityEngine.InputSystem.EnhancedTouch.Touch;
+using TouchPhase = UnityEngine.InputSystem.TouchPhase;
 
 [RequireComponent(typeof(Rigidbody))]
 public class CameraControl : MonoBehaviour {
 
+	// cache the camera's transform for performance to avoid having to call Camera.main in update
 	Transform cam;
+	// (new input system) get the control actions from Game Manager
 	Controls.CameraMapActions input;
 
+	// input variables declaired here so that they can be updated in UpdateInputs for organization
 	float inputZoom = 0f;
 	Vector2 inputCamRot = Vector2.zero;
-	Vector2 inputSunRot = Vector2.zero;
 
-	Vector2 zoomRange = new Vector2(-155f, -350f);
-	Vector2 zoomSpeedRange = new Vector2(0.1f, 1f);
+	float lastMultiTouchDistance;
+
+	// fraction between 0 and 1 of where zoom falls within zoomRange
 	float zoomPercent = 1f;
-	float zoom = -280f;
+	// distance of the camera from its pivot
+	float zoom = -350f;
+	// bounds that zoom can move the camera within
+	Vector2 zoomRange = new Vector2(-155f, -350f);
+	// zoomSpeed varies based on current zoomPercent within these values
+	Vector2 zoomSpeedRange = new Vector2(0.1f, 1f);
+	// tilt the camera within these values based on zoomPercent
 	Vector2 zoomAngleRange = new Vector2(-50f, 0f);
-
-	Vector3 eulerRotation = Vector3.zero;
+	// camera movement (pivot rotation) depends on zoomPercent
 	Vector2 rotationSpeedRange = new Vector2(1f,20f);
-	float rotationDamping = 3f;
-
+	// when set to true, NorthUp rotates the camera controller (this) to put north at the top of the screen
 	bool correctNorth = false;
 
-	public Rigidbody sun;
 
 	void Start() {
 		cam = Camera.main.transform;
@@ -35,21 +40,43 @@ public class CameraControl : MonoBehaviour {
 	
 	// movement is done in FixedUpdate to match physics updates
 	void FixedUpdate() {
+		// UpdateInputs has to be first so that other functions can use most up-to-date input variables
 		UpdateInputs();
+		// Zoom happens before rotation because rotation speed depends on zoomPercent
 		Zoom();
+		// Rotation of camera controller (this) creates camera movement around the globe
 		Rotation();
-		SunRotation();
+		// Last, correct north as the direction of North depends on Rotation 
 		NorthUp();
 	}
 
 	void UpdateInputs() {
 		inputZoom = input.Zoom.ReadValue<float>();
+		PinchZoom();
 		// button
 		inputCamRot = input.Rotate.ReadValue<Vector2>();
 		// mouse
 		if (Mouse.current.leftButton.IsPressed()) inputCamRot = -Mouse.current.delta.ReadValue() / 10f;
-		inputSunRot = input.SunRotation.ReadValue<Vector2>();
+		// true when input key is held
 		correctNorth = input.NorthUp.ReadValue<float>() > 0.1f;
+	}
+	void PinchZoom() {
+		// don't do anything if there are less than two touches
+		if (Touch.activeTouches.Count < 2) return;
+		Touch touchOne = Touch.activeTouches[0];
+		Touch touchTwo = Touch.activeTouches[1];
+		// initialize lastMultiTouchDistance when either touch begins
+		if (touchOne.phase == TouchPhase.Began || touchTwo.phase == TouchPhase.Began) {
+			lastMultiTouchDistance = Vector2.Distance(touchOne.screenPosition, touchTwo.screenPosition);
+		}
+		// don't do anything if fingers aren't moving
+		if (touchOne.phase != TouchPhase.Moved && touchTwo.phase != TouchPhase.Moved) return;
+		// get the current distance between two fingers
+		float newMultiTouchDistance = Vector2.Distance(touchOne.screenPosition, touchTwo.screenPosition);
+		// add the difference between current and last touch distances to inputZoom
+		inputZoom += lastMultiTouchDistance - newMultiTouchDistance;
+		// update lastMultiTouchDistance
+		lastMultiTouchDistance = newMultiTouchDistance;
 	}
 	void Zoom() {
 		// zoom faster while further out
@@ -93,18 +120,6 @@ public class CameraControl : MonoBehaviour {
 		// apply the rotation as a torque
 		GetComponent<Rigidbody>().AddTorque(rot);
 	}
-	void SunRotation() {
-		// if there's no input, don't bother with calculations 
-		if (inputSunRot == Vector2.zero) return;
-		// raw rotation: relative to camera controller (this) based on input
-		Vector3 sunRot = (inputSunRot.y * transform.right - inputSunRot.x * transform.up);
-		// ideal sun direction vector based on the plane of the rotation
-		Vector3 sunIdealForward = Vector3.ProjectOnPlane(sun.transform.forward, sunRot);
-		// correct rotation by adding change toward ideal
-		sunRot += Vector3.Cross(sun.transform.forward, sunIdealForward);
-		// apply the rotation as a torque
-		sun.AddTorque(sunRot);
-	}
 	void NorthUp() {
 		// check for input
 		if (!correctNorth) return;
@@ -134,6 +149,22 @@ public class CameraControl : MonoBehaviour {
 	controls.CameraMap.Zoom.performed += ZoomPerformed;
  // calls this on event:
 	void ZoomPerformed(InputAction.CallbackContext context) { Debug.Log(context.ReadValue<float>()); }
+*/
+
+/* removed for now so for simplicity
+// uses public Rigidbody sun;
+	void SunRotation() {
+		// if there's no input, don't bother with calculations 
+		if (inputSunRot == Vector2.zero) return;
+		// raw rotation: relative to camera controller (this) based on input
+		Vector3 sunRot = (inputSunRot.y * transform.right - inputSunRot.x * transform.up);
+		// ideal sun direction vector based on the plane of the rotation
+		Vector3 sunIdealForward = Vector3.ProjectOnPlane(sun.transform.forward, sunRot);
+		// correct rotation by adding change toward ideal
+		sunRot += Vector3.Cross(sun.transform.forward, sunIdealForward);
+		// apply the rotation as a torque
+		sun.AddTorque(sunRot);
+	}
 */
 
 /*
