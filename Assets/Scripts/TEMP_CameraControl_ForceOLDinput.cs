@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class CameraControl_Force : MonoBehaviour {
+public class TEMP_CameraControl_Force : MonoBehaviour {
 	
 	Transform cam;
 	
