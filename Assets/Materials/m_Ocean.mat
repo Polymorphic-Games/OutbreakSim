@@ -121,7 +121,7 @@ Material:
     - _FoamSpeed: 2
     - _FoamWidth: 2
     - _FresnelPower: 5
-    - _FresnelWeight: 0.2
+    - _FresnelWeight: 0.3
     - _GlossMapScale: 1
     - _Glossiness: 0.5
     - _GlossyReflections: 1
@@ -141,7 +141,7 @@ Material:
     - _UVSec: 0
     - _WaveNormalScale: 0.05
     - _WaveSpeed: 0.5
-    - _WaveStrength: 0.874
+    - _WaveStrength: 0.659
     - _ZWrite: 1
     m_Colors:
     - _Ambient: {r: 0.106057905, g: 0.11751007, b: 0.23584908, a: 0}
