@@ -35,15 +35,25 @@ namespace CJSim {
 			}
 		}
 
+		public int cellCount {
+			get {
+				return readCells.Length;
+			}
+		}
+
 		//Get/set thread count
-		//Trying to set the threadcount while the simulation is running will update the thread count at the next end of tick
+		//Trying to set the threadcount while the simulation is running will error
+		//Verify that the simulation is not running before updating this
 		public int threadCount {
 			set {
 				if (isRunning) {
-					
+					throw new Exception("Can't update thread count while simulation is running");
 				}					
 				_threadCount = value;
 				threadCountChanged?.Invoke();
+			}
+			get {
+				return _threadCount;
 			}
 		}
 
@@ -51,7 +61,11 @@ namespace CJSim {
 
 		#region Member Variables
 
-		int _threadCount;
+		private int _threadCount;
+
+		public Cell[] readCells;
+		private Cell[] writeCells;
+		
 
 		#endregion
 
@@ -73,7 +87,7 @@ namespace CJSim {
 		}
 
 
-		//The joke lives on
+		//The joke lives on (although I doubt it is comprehensible anymore)
 		//Ticks the simulation in full, synchronously
 		//Still makes threads and fires events, things just happen faster and will likely cause a stutter in framerate
 		public void tickSimulation() {

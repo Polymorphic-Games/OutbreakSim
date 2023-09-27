@@ -5,9 +5,10 @@
 
 namespace CJSim {
 	class SimModel {
-
-
-		SimModel(int compartmentCount, int reactionCount) {
+		public float[] parameters;
+		//Interface is WIP
+		//We know we want to laod from files though
+		SimModel() {
 
 		}
 
