@@ -97,7 +97,10 @@ namespace CJSim {
 		#endregion
 
 		//Basic simulation isnitialization
-		public SimCore(int cellCount) {
+		public SimCore(int cellCount, int? threadCount = null) {
+			if (threadCount == null) {
+				threadCount = System.Environment.ProcessorCount;
+			}
 		}
 
 	}
