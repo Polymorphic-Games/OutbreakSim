@@ -5,7 +5,7 @@
 namespace CJSim {
 	public class Simulation {
 
-		public Simulation() {
+		public Simulation(SimModel model) {
 			
 		}
 	}
