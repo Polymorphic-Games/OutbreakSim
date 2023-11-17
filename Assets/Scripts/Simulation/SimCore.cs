@@ -4,18 +4,19 @@
 //Operates on an array of cells and handles movement between them
 
 using System;
+using System.Threading;
 
 namespace CJSim {
-	class SimCore {
+	public class SimCore {
 		#region Events
 
 		//Called before the cell update process starts
 		public event Action preCellUpdates;
 
 		//Called in a thread before a specific cell is updated, passes the thread index and the cell index, respectively
-		public event Action<Tuple<int,int>> preCellThreadUpdate;
+		public event Action<Tuple<int,int>> preCellThreadedUpdate;
 		//Called in a thread after a specific cell is updated, passes the thread index and the cell index, respectively
-		public event Action<Tuple<int,int>> postCellThreadUpdate;
+		public event Action<Tuple<int,int>> postCellThreadedUpdate;
 
 		//Called after every cell has been updated
 		public event Action postCellUpdates;
@@ -63,6 +64,8 @@ namespace CJSim {
 
 		private int _threadCount;
 
+		private Thread[] threads;
+
 		public Cell[] readCells;
 		private Cell[] writeCells;
 		
@@ -71,9 +74,17 @@ namespace CJSim {
 
 		#region Functions
 
-		//Begins a new tick
-		public void beginTick() {
+		//Initializes cell arrays in a very basic way
+		//Anything complex needs to be done by you
+		private void initCells(int _cellCount) {
+			readCells = new Cell[_cellCount];
+			writeCells = new Cell[_cellCount];
+		}
 
+		//Begins a new tick
+		public void beginTick(float dt) {
+			threads = new Thread[threadCount];
+			
 		}
 
 		//If the processing for the current tick is done, clean up the things and invoke events
@@ -87,20 +98,22 @@ namespace CJSim {
 		}
 
 
-		//The joke lives on (although I doubt it is comprehensible anymore)
+		//The joke lives on (although I doubt it is comprehensible as a joke anymore)
 		//Ticks the simulation in full, synchronously
 		//Still makes threads and fires events, things just happen faster and will likely cause a stutter in framerate
-		public void tickSimulation() {
-
+		public void tickSimulation(float dt) {
+			beginTick(dt);
+			forceEndTick();
 		}
 
 		#endregion
 
 		//Basic simulation isnitialization
-		public SimCore(int cellCount, int? threadCount = null) {
+		public SimCore(SimModel model, int cellCount, int? threadCount = null) {
 			if (threadCount == null) {
 				threadCount = System.Environment.ProcessorCount;
 			}
+			initCells(cellCount);
 		}
 
 	}
