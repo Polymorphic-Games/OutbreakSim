@@ -41,8 +41,8 @@ namespace CJSim {
 		}
 
 
-		public static DiseaseState deterministicTick(ref DiseaseState state, ref SimModel model, float reqTime) {
-			DiseaseState writeState = new DiseaseState(state);
+		public static void deterministicTick(ref DiseaseState readState, ref DiseaseState writeState, SimModel model, float reqTime) {
+			writeState.setTo(readState);
 
 			for (int q = 0; q < model.reactionCount; q++) {
 				float res = dispatchPropensityFunction(ref writeState, ref model, model.reactionFunctionDetails[q]) * reqTime;
@@ -52,7 +52,6 @@ namespace CJSim {
 					writeState.state[model.stoichiometry[stoich].Item1] -= (int)res;
 				}
 			}
-			return writeState;
 		}
 	}
 }

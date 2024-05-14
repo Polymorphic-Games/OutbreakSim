@@ -6,7 +6,7 @@ namespace CJSim {
 	public struct DiseaseState {
 		public readonly int[] state;
 		
-		//The only constructor, requires the state (compartment) count
+		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
 			state = new int[stateCount];
 
@@ -19,13 +19,16 @@ namespace CJSim {
 			set {state[index] = value;}
 		}
 
-		//Copy constructor, this struct contains reference type that need to be explicitly copied
+		//Copy constructor, this struct contains a reference type that needs to be explicitly copied
 		public DiseaseState(DiseaseState other) {
 			state = new int[other.stateCount];
 			for (int q = 0; q< other.stateCount; q++) {
 				state[q] = other.state[q];
 			}
 		}
+
+		//Constructor for the lazy man
+		public DiseaseState(SimModel model) : this(model.compartmentCount) {}
 
 		//Shorthand for getting the number of states (compartments)
 		public int stateCount {
@@ -34,11 +37,9 @@ namespace CJSim {
 			}
 		}
 
-		//Get the sum
+		//Calculates the sum of all the compartments
 		public int numberOfPeople {
 			get {
-				//A for loop would be more general, but are we really going to change the number of states?
-				//As it would turn out, yes
 				int ret = 0;
 				for (int q = 0; q < stateCount; q++) {
 					ret += state[q];
@@ -51,6 +52,14 @@ namespace CJSim {
 		public void setToZero() {
 			for (int q = 0; q < stateCount; q++) {
 				state[q] = 0;
+			}
+		}
+
+		public void setTo(DiseaseState other) {
+			if (other.stateCount == stateCount) {
+				for (int q = 0; q < stateCount; q++) {
+					state[q] = other.state[q];
+				}
 			}
 		}
 	}

@@ -5,6 +5,7 @@
 namespace CJSim {
 	public class Simulation {
 		public SimCore core;
+		public SimClock clock;
 
 		public Simulation(SimModel model, int cellCount) {
 			core = new SimCore(model, cellCount);

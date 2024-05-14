@@ -22,6 +22,8 @@ public class DiseaseStateTests {
 		Assert.AreEqual(100, state[4]);
 	}
 
+
+	//Test the state copy constructor
 	[Test]
 	public void DiseaseStateTests_CopyConstructor() {
 		DiseaseState goodState = new DiseaseState(10);
@@ -36,6 +38,8 @@ public class DiseaseStateTests {
 		Assert.AreEqual(3, goodState[3]);
 	}
 
+
+	//Test the state.numberOfPeople property
 	[Test]
 	public void DiseaseStateTests_NumberOfPeople() {
 		DiseaseState state = new DiseaseState(10);
@@ -47,10 +51,33 @@ public class DiseaseStateTests {
 	}
 
 	[Test]
-	public void DiseaseStateTests_SetTo0() {
+	public void DiseaseStateTests_SetToZero() {
 		DiseaseState state = new DiseaseState(10);
 		state[1] = 100;
 		state.setToZero();
 		Assert.AreEqual(0, state[1]);
+	}
+
+	[Test]
+	public void DiseaseStateTests_SetAs() {
+		DiseaseState state1 = new DiseaseState(10);
+		DiseaseState state2 = new DiseaseState(10);
+		state1.setToZero();
+		for (int q = 0; q < state2.stateCount; q++) {
+			state2[q] = q + 10;
+		}
+		state1.setTo(state2);
+		for (int q = 0; q < state1.stateCount; q++) {
+			Assert.AreEqual(state1[q], state2[q]);
+			//Make sure state2 hasn't been effected
+			Assert.AreEqual(state2[q], q+10);
+		}
+		state1 = new DiseaseState(9);
+		state1.setTo(state2);
+		for (int q = 0; q < state1.stateCount; q++) {
+			Assert.AreNotEqual(state1[q], state2[q]);
+			//Make sure state2 hasn't been effected
+			Assert.AreEqual(state2[q], q+10);
+		}
 	}
 }
