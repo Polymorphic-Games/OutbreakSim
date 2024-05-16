@@ -34,7 +34,7 @@ namespace CJSim {
 		//Check if the simulation is running
 		public bool isRunning {
 			get {
-				throw new System.NotImplementedException();
+				return threadFinishedHandles.Length != 0 && !WaitHandle.WaitAll(threadFinishedHandles, 0);
 			}
 		}
 
@@ -71,7 +71,11 @@ namespace CJSim {
 		private int _threadCount = -1;
 
 		private Thread[] threads;
+		private float threadDT = 1.0f;
+		//Set these to fire the threads
 		private EventWaitHandle[] waitHandles;
+		//Threads set these when they're done
+		private EventWaitHandle[] threadFinishedHandles;
 
 		public DiseaseState[] readCells;
 		private DiseaseState[] writeCells;
@@ -95,35 +99,62 @@ namespace CJSim {
 		}
 
 		private void onThreadCountChange() {
-			//Clean up the old threads
-			for (int q = 0; q < threads.Length; q++) {
-				threads[q].Abort();
+			//If there is anything to dispose of
+			if (threads != null) {
+				//Clean up the old threads
+				for (int q = 0; q < threads.Length; q++) {
+					threads[q].Abort();
+				}
+				//Clean up old wait handles
+				foreach (EventWaitHandle q in waitHandles) {
+					q.Dispose();
+				}
+				foreach (EventWaitHandle q in threadFinishedHandles) {
+					q.Dispose();
+				}
 			}
 
 			threads = new Thread[threadCount];
 			waitHandles = new EventWaitHandle[threadCount];
+			threadFinishedHandles = new EventWaitHandle[threadCount];
 			for (int q = 0; q < threadCount; q++) {
-				waitHandles[q] = new AutoResetEvent(false);
+				waitHandles[q] = new ManualResetEvent(false);
+				threadFinishedHandles[q] = new ManualResetEvent(false);
 				
 				threads[q] = new Thread(threadUpdate);
 				threads[q].Start(q);
 			}
-
 		}
 
 		//Begins a new tick
 		public void beginTick(float dt = 1.0f) {
-			
+			threadDT = dt;
+			for (int q = 0; q < waitHandles.Length; q++) {
+				waitHandles[q].Set();
+			}
 		}
 
 		//If the processing for the current tick is done, clean up the things and invoke events
 		public void tryEndTick() {
-
+			//When threads are definitely done, let's do something
+			if (!isRunning) {
+				onThreadsDone();
+			}
 		}
 
-		//Forces a tick to end, may cause stuttering as threads are joined
+		//Forces a tick to end, may cause stuttering as threads are waited on
 		public void forceEndTick() {
-
+			WaitHandle.WaitAll(threadFinishedHandles);
+			onThreadsDone();
+		}
+		
+		//Called when threads are finished for the tick
+		public void onThreadsDone() {
+			//Swap cell buffers
+			DiseaseState[] tmp = readCells;
+			readCells = writeCells;
+			writeCells = tmp;
+			postCellUpdates?.Invoke();
 		}
 
 		//The joke lives on (although I doubt it is comprehensible as a joke anymore)
@@ -146,22 +177,32 @@ namespace CJSim {
 			while (true) {
 				//Wait for update to be requested
 				waitHandles[index].WaitOne();
+				//Manual handles
+				waitHandles[index].Reset();
+				threadFinishedHandles[index].Reset();
+				
 
 				//Update our block of cells
 				for (int q = blockStart; q < blockEnd; q++) {
-					
+					SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
 				}
+				threadFinishedHandles[index].Set();
 			}
 		}
 
 		#endregion
 
 		//Basic simulation isnitialization
-		public SimCore(SimModel simModel, int cellCount, int threads = -1) {
-			if (threads <= 0) {
+		public SimCore(SimModel simModel, int cellCount, int threadCountParam = -1) {
+			//Initialize arrays to nothings
+			threads = new Thread[0];
+			waitHandles = new EventWaitHandle[0];
+			threadFinishedHandles = new EventWaitHandle[0];
+
+			if (threadCountParam <= 0) {
 				threadCount = System.Environment.ProcessorCount;
 			} else {
-				threadCount = threads;
+				threadCount = threadCountParam;
 			}
 			model = simModel;
 			initCells(cellCount);

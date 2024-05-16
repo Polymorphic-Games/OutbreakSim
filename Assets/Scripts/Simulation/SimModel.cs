@@ -21,7 +21,7 @@ namespace CJSim {
 		//reactionFunctionDetails[0] = [0,1,2,3]  -  the first reactions, pass these args to SimAlgos
 		public int[][] reactionFunctionDetails;
 		
-		IModelMovement modelMovement;
+		public IMovementModel movementModel;
 
 		#region Properties
 
@@ -43,11 +43,12 @@ namespace CJSim {
 
 		//The 'count' constructor, used for when you have some code to populate the various necessary fields
 		//Makes the basic data structures have the correct size, just unpopulated
-		public SimModel(int compartmentCount, int reactionCount, int parameterCount, ModelType modelType) {
+		public SimModel(int compartmentCount, int reactionCount, int parameterCount, IMovementModel movement, ModelType modelType) {
 			this.reactionCount = reactionCount;
 			this.compartmentCount = compartmentCount;
 			this.parameterCount = parameterCount;
 			this.modelType = modelType;
+			this.movementModel = movement;
 
 			stoichiometry = new Tuple<int, int>[reactionCount];
 			reactionFunctionDetails = new int[reactionCount][];
