@@ -186,6 +186,8 @@ namespace CJSim {
 				for (int q = blockStart; q < blockEnd; q++) {
 					SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
 				}
+
+				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();
 			}
 		}
