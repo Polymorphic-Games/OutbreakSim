@@ -1,5 +1,3 @@
-
-
 //Holds the core of the simulation
 //Operates on an array of cells and handles movement between them
 
@@ -73,7 +71,7 @@ namespace CJSim {
 		private Thread[] threads;
 		private float threadDT = 1.0f;
 		//Set these to fire the threads
-		private EventWaitHandle[] waitHandles;
+		private EventWaitHandle[] threadStartHandles;
 		//Threads set these when they're done
 		private EventWaitHandle[] threadFinishedHandles;
 
@@ -106,7 +104,7 @@ namespace CJSim {
 					threads[q].Abort();
 				}
 				//Clean up old wait handles
-				foreach (EventWaitHandle q in waitHandles) {
+				foreach (EventWaitHandle q in threadStartHandles) {
 					q.Dispose();
 				}
 				foreach (EventWaitHandle q in threadFinishedHandles) {
@@ -115,10 +113,10 @@ namespace CJSim {
 			}
 
 			threads = new Thread[threadCount];
-			waitHandles = new EventWaitHandle[threadCount];
+			threadStartHandles = new EventWaitHandle[threadCount];
 			threadFinishedHandles = new EventWaitHandle[threadCount];
 			for (int q = 0; q < threadCount; q++) {
-				waitHandles[q] = new ManualResetEvent(false);
+				threadStartHandles[q] = new ManualResetEvent(false);
 				threadFinishedHandles[q] = new ManualResetEvent(false);
 				
 				threads[q] = new Thread(threadUpdate);
@@ -129,8 +127,8 @@ namespace CJSim {
 		//Begins a new tick
 		public void beginTick(float dt = 1.0f) {
 			threadDT = dt;
-			for (int q = 0; q < waitHandles.Length; q++) {
-				waitHandles[q].Set();
+			for (int q = 0; q < threadStartHandles.Length; q++) {
+				threadStartHandles[q].Set();
 			}
 		}
 
@@ -144,6 +142,19 @@ namespace CJSim {
 
 		//Forces a tick to end, may cause stuttering as threads are waited on
 		public void forceEndTick() {
+			//First check that every thread has started
+			for (int q = 0; q < threadStartHandles.Length; q++) {
+				//Waiting for all of these to be false
+				//So if true
+				if (threadStartHandles[q].WaitOne(0)) {
+					//Then wait a bit
+					Thread.Sleep(1);
+					forceEndTick();
+					return;
+				}
+			}
+
+
 			WaitHandle.WaitAll(threadFinishedHandles);
 			onThreadsDone();
 		}
@@ -169,24 +180,23 @@ namespace CJSim {
 			int index = (int)objIndex;
 			//How many cells does each thread deal with?
 			int blockSize = cellCount + (threadCount - (cellCount % threadCount));
+			
 
 			//Calculate our block
 			int blockStart = index * blockSize;
-			int blockEnd = index * (blockSize + 1);
+			int blockEnd = (index + 1) * blockSize;
 			blockEnd = blockEnd <= cellCount ? blockEnd : cellCount;
 			while (true) {
 				//Wait for update to be requested
-				waitHandles[index].WaitOne();
+				threadStartHandles[index].WaitOne();
 				//Manual handles
-				waitHandles[index].Reset();
+				threadStartHandles[index].Reset();
 				threadFinishedHandles[index].Reset();
-				
 
 				//Update our block of cells
 				for (int q = blockStart; q < blockEnd; q++) {
 					SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
 				}
-
 				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();
 			}
@@ -198,7 +208,7 @@ namespace CJSim {
 		public SimCore(SimModel simModel, int cellCount, int threadCountParam = -1) {
 			//Initialize arrays to nothings
 			threads = new Thread[0];
-			waitHandles = new EventWaitHandle[0];
+			threadStartHandles = new EventWaitHandle[0];
 			threadFinishedHandles = new EventWaitHandle[0];
 
 			if (threadCountParam <= 0) {

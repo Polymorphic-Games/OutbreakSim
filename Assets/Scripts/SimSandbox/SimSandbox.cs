@@ -16,24 +16,41 @@ public class SimSandbox : MonoBehaviour {
 		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
 		model.reactionFunctionDetails[1] = new int[]{0,1,1};
 
+		model.stoichiometry[0] = new System.Tuple<int, int>(0,1);
+		model.stoichiometry[1] = new System.Tuple<int, int>(1,2);
+
 		model.parameters[0] = 1.0f;
 		model.parameters[1] = 0.1f;
 		
 		SimCore core = new SimCore(model, 1, 1);
+		core.readCells[0].state[0] = 100000;
+		core.readCells[0].state[1] = 100;
 		
 		simulation = new Simulation(core);
-
-		var category = chart.DataSource.GetCategory("dataseries-1").Data; // obtain category data
-		category.Append(0.0, 0.0); // call append to add a new point to the graph
-		category.Append(100.0, 2.0);
-		category.Append(200.0, 1.0);
-		category.Append(300.0, 5.0);
-		category.Append(500.0, 2.0);
 	}
 
+	float dt = 0.0f;
 	private void Update() {
 		if (Input.GetKeyDown(KeyCode.Space)) {
-			Debug.Log("Space pressed");
+			try {
+				CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
+				category.Append(dt, simulation.core.readCells[0].state[0]);
+
+				//category = chart.DataSource.GetCategory("infected").Data; // obtain category data
+				//category.Append(dt, simulation.core.readCells[0].state[1]);
+			} catch (System.Exception e) {
+				ThreadLogger.Log(e.Message);
+			}
+
+
+			dumpSim();
+			dt += 0.3f;
+			simulation.core.tickSimulation(0.3f);
+			dumpSim();
 		}
+	}
+
+	private void dumpSim() {
+		Debug.Log("Sim Dump At " + dt + "\n" + simulation.core.readCells[0].ToString());
 	}
 }

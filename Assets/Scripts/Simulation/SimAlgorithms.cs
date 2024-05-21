@@ -1,12 +1,10 @@
-
-
 //Holds algorithms that operate on disease states
 
 
 namespace CJSim {
 	class SimAlgorithms {
 		public delegate float ReactionFunctionTypes(int stateIdx, ref DiseaseState state, SimModel model, int[] argv);
-		public const int propensityFunctionTypeCount = 2;
+		public const int propensityFunctionTypeCount = 3;
 
 		public static ReactionFunctionTypes[] reactionFuncTypes;
 
@@ -20,6 +18,7 @@ namespace CJSim {
 		}
 
 		//Static initializer
+		//If this function errors and the static initializer ran on a thread, unity will not display any error message
 		static SimAlgorithms() {
 			//Set up propensity functions
 			reactionFuncTypes = new ReactionFunctionTypes[propensityFunctionTypeCount];
@@ -54,14 +53,10 @@ namespace CJSim {
 
 		public static void deterministicTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, float reqTime) {
 			writeState.setTo(readState);
-
 			for (int q = 0; q < model.reactionCount; q++) {
-				float res = dispatchPropensityFunction(stateIdx, ref writeState, model, model.reactionFunctionDetails[q]) * reqTime;
-				for (int stoich = 0; stoich < model.compartmentCount; stoich++) {
-					//writeState.state[stoich] += (int)(model.stoichiometry[q, stoich] * res);
-					writeState.state[model.stoichiometry[stoich].Item2] += (int)res;
-					writeState.state[model.stoichiometry[stoich].Item1] -= (int)res;
-				}
+				float res = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]) * reqTime;
+				writeState.state[model.stoichiometry[q].Item2] += (int)res;
+				writeState.state[model.stoichiometry[q].Item1] -= (int)res;
 			}
 		}
 	}

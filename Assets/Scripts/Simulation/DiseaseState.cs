@@ -55,6 +55,19 @@ namespace CJSim {
 			}
 		}
 
+		public override string ToString() {
+			if (stateCount <= 0) {
+				return "";
+			}
+			string ret = "";
+			for (int q = 0; q < stateCount-1; q++) {
+				ret += state[q] + ", ";
+			}
+			ret += state[stateCount-1];
+			return ret;
+		}
+
+		//Sets a state to another one
 		public void setTo(DiseaseState other) {
 			if (other.stateCount == stateCount) {
 				for (int q = 0; q < stateCount; q++) {
