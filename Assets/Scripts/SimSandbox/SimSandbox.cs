@@ -36,8 +36,8 @@ public class SimSandbox : MonoBehaviour {
 				CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
 				category.Append(dt, simulation.core.readCells[0].state[0]);
 
-				//category = chart.DataSource.GetCategory("infected").Data; // obtain category data
-				//category.Append(dt, simulation.core.readCells[0].state[1]);
+				CategoryDataHolder category2 = chart.DataSource.GetCategory("infected").Data; // obtain category data
+				category2.Append(dt, simulation.core.readCells[0].state[1]);
 			} catch (System.Exception e) {
 				ThreadLogger.Log(e.Message);
 			}
