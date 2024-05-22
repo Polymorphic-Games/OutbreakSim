@@ -27,26 +27,31 @@ public class SimSandbox : MonoBehaviour {
 		core.readCells[0].state[1] = 100;
 		
 		simulation = new Simulation(core);
+		
+		chart.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
+		chart.DataSource.GetCategory("infected").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
+		chart.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
+
+		chart.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.white;
+		chart.DataSource.GetCategory("infected").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.red;
+		chart.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.green;
 	}
 
 	float dt = 0.0f;
+	float step = 0.3f;
 	private void Update() {
 		if (Input.GetKeyDown(KeyCode.Space)) {
-			try {
+			for (int q = 0; q < 10; q++) {
 				CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
-				category.Append(dt, simulation.core.readCells[0].state[0]);
-
 				CategoryDataHolder category2 = chart.DataSource.GetCategory("infected").Data; // obtain category data
+				CategoryDataHolder category3 = chart.DataSource.GetCategory("rec").Data; // obtain category data
+				
+				category.Append(dt, simulation.core.readCells[0].state[0]);
 				category2.Append(dt, simulation.core.readCells[0].state[1]);
-			} catch (System.Exception e) {
-				ThreadLogger.Log(e.Message);
+				category3.Append(dt, simulation.core.readCells[0].state[2]);
+				dt += step;
+				simulation.core.tickSimulation(step);
 			}
-
-
-			dumpSim();
-			dt += 0.3f;
-			simulation.core.tickSimulation(0.3f);
-			dumpSim();
 		}
 	}
 
