@@ -1,16 +1,13 @@
 //Holds algorithms that operate on disease states
-
+using System;
 
 namespace CJSim {
 	class SimAlgorithms {
 		public delegate float ReactionFunctionTypes(int stateIdx, ref DiseaseState state, SimModel model, int[] argv);
+		//Very important number! The static initializer will error out if this is too low!
 		public const int propensityFunctionTypeCount = 3;
 
 		public static ReactionFunctionTypes[] reactionFuncTypes;
-
-		//When railroading dt with tau leaping, how much are we willing to raise tau to meet the railroad demand
-		//Also basically a "minimum" amount, you probably shouldn't lower from .1
-		const float maxTauRaiseAmount = 0.1f;
 
 		//Runs the correct propensity function given the magic numbers to describe it
 		public static float dispatchPropensityFunction(int stateIdx, ref DiseaseState state, SimModel model, int[] argv) {
@@ -44,13 +41,13 @@ namespace CJSim {
 
 				float neighborFactor = 0.0f;
 				for (int q = 0; q < neighbors.Length; q++) {
-					
+					throw new System.NotImplementedException();
 				}
 				return model.parameters[argv[1]] * state.state[argv[2]] * (neighborFactor);
 			};
 		}
 
-
+		//Does a basic deterministic tick of a disease state
 		public static void deterministicTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, float reqTime) {
 			writeState.setTo(readState);
 			for (int q = 0; q < model.reactionCount; q++) {
@@ -58,6 +55,38 @@ namespace CJSim {
 				writeState.state[model.stoichiometry[q].Item2] += (int)res;
 				writeState.state[model.stoichiometry[q].Item1] -= (int)res;
 			}
+
+			writeState.timeSimulated += reqTime;
+		}
+
+		//Returns the sum of all the propensity functions for this state
+		private static float sumOfPropensityFunctions(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model) {
+			float res = 0.0f;
+			for (int q = 0; q < model.reactionCount; q++) {
+				res += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
+			}
+			return res;
+		}
+
+		//Does a single reaction via the gillespie algorithm
+		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, Random random) {
+			writeState.setTo(readState);
+			float sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
+			float sumPropsR2 = sumProps * (float)random.NextDouble();
+			float tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+			
+			float sum = 0.0f;
+			for (int q = 0; q < model.reactionCount; q++) {
+				float currProp = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
+				sum += currProp;
+				if (sum > sumPropsR2) {
+					//This is the reaction we do
+					writeState.state[model.stoichiometry[q].Item1] -= 1;
+					writeState.state[model.stoichiometry[q].Item2] += 1;
+					break;
+				}
+			}
+			writeState.timeSimulated += tau;
 		}
 	}
 }

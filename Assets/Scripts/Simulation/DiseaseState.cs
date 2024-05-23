@@ -5,10 +5,12 @@
 namespace CJSim {
 	public struct DiseaseState {
 		public readonly int[] state;
+		public float timeSimulated;
 		
 		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
 			state = new int[stateCount];
+			timeSimulated = 0.0f;
 
 			setToZero();
 		}
@@ -22,6 +24,7 @@ namespace CJSim {
 		//Copy constructor, this struct contains a reference type that needs to be explicitly copied
 		public DiseaseState(DiseaseState other) {
 			state = new int[other.stateCount];
+			timeSimulated = other.timeSimulated;
 			for (int q = 0; q< other.stateCount; q++) {
 				state[q] = other.state[q];
 			}
@@ -53,6 +56,7 @@ namespace CJSim {
 			for (int q = 0; q < stateCount; q++) {
 				state[q] = 0;
 			}
+			timeSimulated = 0.0f;
 		}
 
 		public override string ToString() {
@@ -73,6 +77,7 @@ namespace CJSim {
 				for (int q = 0; q < stateCount; q++) {
 					state[q] = other.state[q];
 				}
+				timeSimulated = other.timeSimulated;
 			}
 		}
 	}

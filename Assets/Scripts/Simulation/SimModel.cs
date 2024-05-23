@@ -8,7 +8,8 @@ namespace CJSim {
 	//Model type determines how the model is processed, i.e deterministically or stochastically
 	public enum ModelType {
 		Deterministic,
-		Stochastic
+		Stochastic,
+		Gillespie
 	}
 
 	public class SimModel {

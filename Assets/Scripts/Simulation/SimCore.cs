@@ -186,6 +186,8 @@ namespace CJSim {
 			int blockStart = index * blockSize;
 			int blockEnd = (index + 1) * blockSize;
 			blockEnd = blockEnd <= cellCount ? blockEnd : cellCount;
+
+			Random random = new Random();
 			while (true) {
 				//Wait for update to be requested
 				threadStartHandles[index].WaitOne();
@@ -195,7 +197,14 @@ namespace CJSim {
 
 				//Update our block of cells
 				for (int q = blockStart; q < blockEnd; q++) {
-					SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
+					switch (model.modelType) {
+						case ModelType.Deterministic:
+						SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
+						break;
+						case ModelType.Gillespie:
+						SimAlgorithms.gillespieTick(q, ref readCells[q], ref writeCells[q], model, random);
+						break;
+					}
 				}
 				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();
