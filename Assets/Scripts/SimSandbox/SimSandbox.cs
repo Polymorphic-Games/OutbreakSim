@@ -11,7 +11,7 @@ public class SimSandbox : MonoBehaviour {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
 		IMovementModel movementModel = new MovementModelNone();
-		SimModel model = new SimModel(3, 2, 2, movementModel, ModelType.Gillespie);
+		SimModel model = new SimModel(3, 2, 2, movementModel, ModelType.TauLeaping);
 		//S,I,R,,,S->I,I->S,,,B,R
 		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
 		model.reactionFunctionDetails[1] = new int[]{0,1,1};
@@ -23,7 +23,7 @@ public class SimSandbox : MonoBehaviour {
 		model.parameters[1] = 0.1f;
 		
 		SimCore core = new SimCore(model, 1, 1);
-		core.readCells[0].state[0] = 10000;
+		core.readCells[0].state[0] = 100000;
 		core.readCells[0].state[1] = 1;
 		
 		simulation = new Simulation(core);
@@ -41,7 +41,7 @@ public class SimSandbox : MonoBehaviour {
 	float lastTime = 0.0f;
 	private void Update() {
 		if (Input.GetKeyDown(KeyCode.Space)) {
-			for (int q = 0; q < 50000; q++) {
+			for (int q = 0; q < 100; q++) {
 				CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
 				CategoryDataHolder category2 = chart.DataSource.GetCategory("infected").Data; // obtain category data
 				CategoryDataHolder category3 = chart.DataSource.GetCategory("rec").Data; // obtain category data
@@ -55,6 +55,7 @@ public class SimSandbox : MonoBehaviour {
 				category2.Append(simulation.core.readCells[0].timeSimulated, simulation.core.readCells[0].state[1]);
 				category3.Append(simulation.core.readCells[0].timeSimulated, simulation.core.readCells[0].state[2]);
 				lastTime = simulation.core.readCells[0].timeSimulated;
+				dumpSim();
 				simulation.core.tickSimulation(step);
 			}
 		}

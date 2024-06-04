@@ -204,6 +204,12 @@ namespace CJSim {
 						case ModelType.Gillespie:
 						SimAlgorithms.gillespieTick(q, ref readCells[q], ref writeCells[q], model, random);
 						break;
+						case ModelType.TauLeaping:
+						SimAlgorithms.tauLeapingTick(q, ref readCells[q], ref writeCells[q], model, random);
+						break;
+						default:
+						ThreadLogger.Log("Default case in this switch???????");
+						break;
 					}
 				}
 				//Let the main thread know we've finished

@@ -8,7 +8,7 @@ namespace CJSim {
 	//Model type determines how the model is processed, i.e deterministically or stochastically
 	public enum ModelType {
 		Deterministic,
-		Stochastic,
+		TauLeaping,
 		Gillespie
 	}
 
@@ -54,6 +54,19 @@ namespace CJSim {
 			stoichiometry = new Tuple<int, int>[reactionCount];
 			reactionFunctionDetails = new int[reactionCount][];
 			parameters = new float[parameterCount];
+		}
+		
+		//Gets the highest order of reaction for this compartment
+		//cjnote should be easy to chache this somewhere
+		public int getHOR(int compartment) {
+			int HOR = 0;
+			//Search reactions for things affecting this compartment
+			for (int q = 0; q < reactionCount; q++) {
+				if (stoichiometry[q].Item1 == compartment || stoichiometry[q].Item2 == compartment) {
+					HOR = Math.Max(HOR, SimAlgorithms.getOrderOfReaction(reactionFunctionDetails[q][0]));
+				}
+			}
+			return HOR;
 		}
 
 
