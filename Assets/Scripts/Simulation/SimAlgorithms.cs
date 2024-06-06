@@ -97,13 +97,13 @@ namespace CJSim {
 		//Does a single reaction via the gillespie algorithm
 		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, Random random) {
 			writeState.setTo(readState);
-			float sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
-			float sumPropsR2 = sumProps * (float)random.NextDouble();
-			float tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
+			double sumPropsR2 = sumProps * random.NextDouble();
+			double tau = ((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
 			
-			float sum = 0.0f;
+			double sum = 0.0f;
 			for (int q = 0; q < model.reactionCount; q++) {
-				float currProp = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
+				double currProp = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
 				sum += currProp;
 				if (sum > sumPropsR2) {
 					//This is the reaction we do
@@ -112,7 +112,7 @@ namespace CJSim {
 					break;
 				}
 			}
-			writeState.timeSimulated += tau;
+			writeState.timeSimulated += (float)tau;
 		}
 
 		#endregion
@@ -273,6 +273,8 @@ namespace CJSim {
 								wouldCauseNegative = true;
 								tauCandidate1 /= 2.0f;
 								//Uhh don't worry about it
+								//We get caught in an infinite loop without this
+								//And it should never happen anyway so how do I know that?
 								return;
 							}
 						} else {

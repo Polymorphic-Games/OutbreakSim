@@ -11,7 +11,7 @@ public class SimSandbox : MonoBehaviour {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
 		IMovementModel movementModel = new MovementModelNone();
-		SimModel model = new SimModel(3, 2, 2, movementModel, ModelType.TauLeaping);
+		SimModel model = new SimModel(3, 2, 2, movementModel, ModelType.Gillespie);
 		//S,I,R,,,S->I,I->R,,,B,R
 		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
 		model.reactionFunctionDetails[1] = new int[]{0,1,1};
@@ -24,7 +24,8 @@ public class SimSandbox : MonoBehaviour {
 		
 		SimCore core = new SimCore(model, 1, 1);
 		core.readCells[0].state[0] = 100000;
-		core.readCells[0].state[1] = 5;
+		core.readCells[0].state[1] = 10;
+		core.readCells[0].state[2] = 0;
 		
 		simulation = new Simulation(core);
 		
