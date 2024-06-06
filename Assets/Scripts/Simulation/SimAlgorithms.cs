@@ -129,7 +129,7 @@ namespace CJSim {
 
 		//https://en.wikipedia.org/wiki/Poisson_distribution#Random_variate_generation
 		public static int poissonSlow(float mean, Random random) {
-			double L = Math.Exp(mean);
+			double L = Math.Exp(-mean);
 			int k = 0;
 			double p = 1;
 			do {
@@ -157,33 +157,35 @@ namespace CJSim {
 			float ret = 0.0f;
 
 			for (int q = 0; q < nonCriticalReactions.Count; q++) {
-				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q])
+				int reaction = nonCriticalReactions[q];
+				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reaction])
 				//If this is a negative affector, then we multiply by -1
 				//cjnote I think I got the logic right on this not 100% sure can't lie
-				* (model.stoichiometry[nonCriticalReactions[q]].Item1 == i ? -1 : 1)
+				* (model.stoichiometry[reaction].Item1 == i ? -1 : 1)
 				//If this reaction isn't related to the specified state then we don't count it
-				* ((model.stoichiometry[nonCriticalReactions[q]].Item1 == i || model.stoichiometry[nonCriticalReactions[q]].Item2 == i) ? 1 : 0);
+				* ((model.stoichiometry[reaction].Item1 == i || model.stoichiometry[reaction].Item2 == i) ? 1 : 0);
 			}
 			return ret;
 		}
 		private static float auxiliaryFunctionSigma(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, int i, List<int> nonCriticalReactions) {
 			float ret = 0.0f;
 			for (int q = 0; q < nonCriticalReactions.Count; q++) {
+				int reaction = nonCriticalReactions[q];
 				//Same as Mu, but the stoichiometry is squared, which for us just mean it'll always be 1
-				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q])
+				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reaction])
 				//If this reaction isn't related to the specified state then we don't count it
-				* ((model.stoichiometry[nonCriticalReactions[q]].Item1 == i || model.stoichiometry[nonCriticalReactions[q]].Item2 == i) ? 1 : 0);
+				* ((model.stoichiometry[reaction].Item1 == i || model.stoichiometry[reaction].Item2 == i) ? 1 : 0);
 			}
 			return ret;
 		}
 
 		//Does the Modified Poisson tau-leaping algorithm from https://doi.org/10.1063%2F1.2159468
-		const int criticalThreshold = 10; //How many people makes a reaction critical, higher values means slower performance
-		const float epsilon = 0.09f; //Error factor, higher means faster but less accurate
-		const float multipleThreshold = 10.0f; //Some small multiple of 1/a0(x) that we usually take to be 10, higher values means better performance but less accurate at the lower part of things
+		const int criticalThreshold = 5; //How many people makes a reaction critical, higher values means slower performance
+		const float epsilon = 0.19f; //Error factor, higher means faster but less accurate
+		const float multipleThreshold = 10.0f; //Some small multiple of 1/a0(x) that we usually take to be 10, lower values means we'll do gillespie steps less often
+		const int gillespieSteps = 100; //How many gillespie steps to run if we need to run gillespie steps
 		public static void tauLeapingTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, Random random) {
 			writeState.setTo(readState);
-			ThreadLogger.Log("Here bb");
 			//cjnote I don't like making lists every single time
 			List<int> nonCriticalReactions = new List<int>();
 			List<int> criticalReactions = new List<int>();
@@ -199,43 +201,34 @@ namespace CJSim {
 			}
 
 			float tauCandidate1 = float.MaxValue;
-			try {
-				//Step 2, calculate tauCandidate1
-				//Take the minimum of everything
-				for (int i = 0; i < model.compartmentCount; i++) {
-					tauCandidate1 = MathF.Min(
-						tauCandidate1,
-						//Because none of our reactions require 2 people gi is always just the HOR
-						MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1) / MathF.Abs(auxiliaryFunctionMu(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions))
-					);
-					tauCandidate1 = MathF.Min(
-						tauCandidate1,
-						//Because none of our reactions require 2 people gi is always just the HOR
-						MathF.Pow(MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1),2) / auxiliaryFunctionSigma(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions)
-					);
-				}
-			} catch (System.Exception e) {
-				ThreadLogger.Log(e.Message);
-				return;
+			//Step 2, calculate tauCandidate1
+			//Take the minimum of everything
+			for (int i = 0; i < model.compartmentCount; i++) {
+				tauCandidate1 = MathF.Min(
+					tauCandidate1,
+					//Because none of our reactions require 2 people gi is always just the HOR
+					MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1) / MathF.Abs(auxiliaryFunctionMu(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions))
+				);
+				tauCandidate1 = MathF.Min(
+					tauCandidate1,
+					//Because none of our reactions require 2 people gi is always just the HOR
+					MathF.Pow(MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1),2) / auxiliaryFunctionSigma(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions)
+				);
 			}
 
 
 			bool wouldCauseNegative = false;
 			do {
-			ThreadLogger.Log("Here bb");
 				wouldCauseNegative = false;
 
 				//Step 3, if tauCandidate1 is too small then we do some gillespie steps
 				float propSum = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
 				if (tauCandidate1 < (multipleThreshold / propSum)) {
 					DiseaseState fakeRead = new DiseaseState(readState);
-					for (int q = 0; q < 100; q++) {
-
+					for (int q = 0; q < gillespieSteps; q++) {
 						SimAlgorithms.gillespieTick(stateIdx, ref fakeRead, ref writeState, model, random);
 						fakeRead.setTo(writeState);
 					}
-					ThreadLogger.Log("Did 100 gillespie ticks");
-					//tauLeapingTick(stateIdx, ref readState, ref writeState, model, random);
 					return;
 				}
 
@@ -259,43 +252,54 @@ namespace CJSim {
 				} else {
 					tau = tauCandidate2;
 					//Collect point probabilities
-					List<float> pointProbabilities = new List<float>();
+					List<Tuple<float, int>> pointProbabilities = new List<Tuple<float, int>>();
 					foreach (int idx in criticalReactions) {
 						float thisOne = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[idx]);
-						pointProbabilities.Add(thisOne / sumCritical);
+						pointProbabilities.Add(new Tuple<float, int>(thisOne / sumCritical, idx));
 					}
 					pointProbabilities.Sort();
 					float rand = (float)random.NextDouble();
 					for (int q = 0; q < pointProbabilities.Count; q++) {
 						//List is sorted so can do easy comparison
-						if (rand < pointProbabilities[q]) {
+						if (rand < pointProbabilities[q].Item1) {
 							//This is the critical reaction that will be ran this step
-							kReactions[q] = 1;
+							int reaction = pointProbabilities[q].Item2;
+							kReactions[reaction] = 1;
 							//Briefly verify that this would not cause negative population
 							//This would presumably never be true, but whatever better safe than sorry
-							if (readState.state[model.stoichiometry[q].Item1] < 1) {
+							if (readState.state[model.stoichiometry[reaction].Item1] < 1) {
 								ThreadLogger.Log("P sure this ain't supposed to happen");
+								ThreadLogger.Log(model.stoichiometry[reaction].Item1.ToString() + " is compartment and " + reaction + " is reaction");
 								wouldCauseNegative = true;
 								tauCandidate1 /= 2.0f;
-								continue;
+								//Uhh don't worry about it
+								return;
 							}
+						} else {
+							rand -= pointProbabilities[q].Item1;
 						}
 					}
+				}
+
+				//If tau is infinity don't bother doing anything
+				if (float.IsInfinity(tau)) {
+					return;
 				}
 
 				//Non critical reactions
 				foreach (int reactionIdx in nonCriticalReactions) {
 					float prop = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reactionIdx]) * tau;
-					int reactions = poissonFast(prop, random);
+					int reactions = poisson(prop, random);
 					kReactions[reactionIdx] = reactions;
 
 					if (readState.state[model.stoichiometry[reactionIdx].Item1] < reactions) {
-						ThreadLogger.Log("Would go negative");
 						wouldCauseNegative = true;
 						tauCandidate1 /= 2.0f;
-						continue;
+						break;
 					}
 				}
+				//Can't continue from the above loop because it's in a loop
+				if (wouldCauseNegative) continue;
 
 				//Step 6, finally do the reactions
 				//cjnote, the entirety of this system needs to be tests, this code has never been run
@@ -304,7 +308,6 @@ namespace CJSim {
 					writeState.state[model.stoichiometry[q].Item2] += kReactions[q];
 				}
 				writeState.timeSimulated += tau;
-			ThreadLogger.Log("Done!");
 
 			} while (wouldCauseNegative);
 
