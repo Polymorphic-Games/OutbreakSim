@@ -199,13 +199,13 @@ namespace CJSim {
 				for (int q = blockStart; q < blockEnd; q++) {
 					switch (model.modelType) {
 						case ModelType.Deterministic:
-						SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, threadDT);
+						SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT);
 						break;
 						case ModelType.Gillespie:
-						SimAlgorithms.gillespieTick(q, ref readCells[q], ref writeCells[q], model, random);
+						SimAlgorithms.gillespieTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT, random);
 						break;
 						case ModelType.TauLeaping:
-						SimAlgorithms.tauLeapingTick(q, ref readCells[q], ref writeCells[q], model, random);
+						SimAlgorithms.tauLeapingTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT, random);
 						break;
 						default:
 						ThreadLogger.Log("Default case in this switch???????");

@@ -12,7 +12,6 @@ namespace CJSim {
 		public DiseaseState(int stateCount) {
 			state = new int[stateCount];
 			timeSimulated = 0.0f;
-
 			setToZero();
 		}
 

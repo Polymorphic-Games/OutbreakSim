@@ -5,15 +5,15 @@ using System.Collections.Generic;
 namespace CJSim {
 	class SimAlgorithms {
 		#region Propensity Functions
-		public delegate float ReactionFunctionTypes(int stateIdx, ref DiseaseState state, SimModel model, int[] argv);
+		public delegate float ReactionFunctionTypes(int stateIdx, ref DiseaseState state, SimModel model, SimCore core, int[] argv);
 		//Very important number! The static initializer will error out if this is too low!
 		public const int propensityFunctionTypeCount = 3;
 
 		public static ReactionFunctionTypes[] reactionFuncTypes;
 
 		//Runs the correct propensity function given the magic numbers to describe it
-		public static float dispatchPropensityFunction(int stateIdx, ref DiseaseState state, SimModel model, int[] argv) {
-			return reactionFuncTypes[argv[0]](stateIdx, ref state, model, argv);
+		public static float dispatchPropensityFunction(int stateIdx, ref DiseaseState state, SimModel model, SimCore core, int[] argv) {
+			return reactionFuncTypes[argv[0]](stateIdx, ref state, model, core, argv);
 		}
 
 		//Static initializer
@@ -23,14 +23,14 @@ namespace CJSim {
 			reactionFuncTypes = new ReactionFunctionTypes[propensityFunctionTypeCount];
 
 			//Basic type, state (idx 1) * param (idx 2)
-			reactionFuncTypes[0] = (int stateIdx, ref DiseaseState state, SimModel model, int[] argv) => {
+			reactionFuncTypes[0] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, int[] argv) => {
 				return (float)state.state[argv[1]] * model.parameters[argv[2]];
 			};
 
 			//Grey arrow, page 16 of the book, thing that depends on the density of infected
 			// (param * state1 * state2) / NumberOfPeopleInState
 			// (idx3 * idx2 * idx1) / Num
-			reactionFuncTypes[1] = (int stateIdx, ref DiseaseState state, SimModel model, int[] argv) => {
+			reactionFuncTypes[1] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, int[] argv) => {
 				return model.parameters[argv[3]] * ((state.state[argv[2]] * (float)state.state[argv[1]]) / (float)state.numberOfPeople);
 			};
 
@@ -38,12 +38,12 @@ namespace CJSim {
 			//We'll put all of that into simulation model I think?
 			// (param(beta) * state1(sus)) * (neighborStuff * state2(infected))
 			// (idx1 * idx2) * (neighborStuff * idx3)
-			reactionFuncTypes[2] = (int stateIdx, ref DiseaseState state, SimModel model, int[] argv) => {
+			reactionFuncTypes[2] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, int[] argv) => {
 				int[] neighbors = model.movementModel.getNeighbors(stateIdx);
 
 				float neighborFactor = 0.0f;
 				for (int q = 0; q < neighbors.Length; q++) {
-					throw new System.NotImplementedException();
+					neighborFactor += model.movementModel.getCellConnectivity(stateIdx, neighbors[q]) * ((float)core.readCells[neighbors[q]].state[argv[3]] / state.numberOfPeople);
 				}
 				return model.parameters[argv[1]] * state.state[argv[2]] * (neighborFactor);
 			};
@@ -66,10 +66,10 @@ namespace CJSim {
 		#region Determinstic
 
 		//Does a basic deterministic tick of a disease state
-		public static void deterministicTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, float reqTime) {
+		public static void deterministicTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float reqTime) {
 			writeState.setTo(readState);
 			for (int q = 0; q < model.reactionCount; q++) {
-				float res = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]) * reqTime;
+				float res = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[q]) * reqTime;
 				writeState.state[model.stoichiometry[q].Item2] += (int)res;
 				writeState.state[model.stoichiometry[q].Item1] -= (int)res;
 			}
@@ -82,10 +82,10 @@ namespace CJSim {
 		#region Helpers
 
 		//Returns the sum of all the propensity functions for this state
-		private static float sumOfPropensityFunctions(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model) {
+		private static float sumOfPropensityFunctions(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimCore core, SimModel model) {
 			float res = 0.0f;
 			for (int q = 0; q < model.reactionCount; q++) {
-				res += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
+				res += dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[q]);
 			}
 			return res;
 		}
@@ -95,24 +95,30 @@ namespace CJSim {
 		#region Gillespie
 
 		//Does a single reaction via the gillespie algorithm
-		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, Random random) {
+		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float maxTime, Random random) {
 			writeState.setTo(readState);
-			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
+			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model);
 			double sumPropsR2 = sumProps * random.NextDouble();
-			double tau = ((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+			float tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+
+			if ((tau + readState.timeSimulated) > maxTime) {
+				return;
+			}
 			
 			double sum = 0.0f;
 			for (int q = 0; q < model.reactionCount; q++) {
-				double currProp = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[q]);
+				double currProp = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[q]);
+				ThreadLogger.Log("Q " + q + " " + currProp);
 				sum += currProp;
 				if (sum > sumPropsR2) {
 					//This is the reaction we do
+					ThreadLogger.Log("Doing reaction " + q);
 					writeState.state[model.stoichiometry[q].Item1] -= 1;
 					writeState.state[model.stoichiometry[q].Item2] += 1;
 					break;
 				}
 			}
-			writeState.timeSimulated += (float)tau;
+			writeState.timeSimulated += tau;
 		}
 
 		#endregion
@@ -153,12 +159,12 @@ namespace CJSim {
 		#region Tau Leaping
 
 		//Auxiliary functions for tau leaping
-		private static float auxiliaryFunctionMu(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, int i, List<int> nonCriticalReactions) {
+		private static float auxiliaryFunctionMu(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, int i, List<int> nonCriticalReactions) {
 			float ret = 0.0f;
 
 			for (int q = 0; q < nonCriticalReactions.Count; q++) {
 				int reaction = nonCriticalReactions[q];
-				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reaction])
+				ret += dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[reaction])
 				//If this is a negative affector, then we multiply by -1
 				//cjnote I think I got the logic right on this not 100% sure can't lie
 				* (model.stoichiometry[reaction].Item1 == i ? -1 : 1)
@@ -167,12 +173,12 @@ namespace CJSim {
 			}
 			return ret;
 		}
-		private static float auxiliaryFunctionSigma(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, int i, List<int> nonCriticalReactions) {
+		private static float auxiliaryFunctionSigma(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, int i, List<int> nonCriticalReactions) {
 			float ret = 0.0f;
 			for (int q = 0; q < nonCriticalReactions.Count; q++) {
 				int reaction = nonCriticalReactions[q];
 				//Same as Mu, but the stoichiometry is squared, which for us just mean it'll always be 1
-				ret += dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reaction])
+				ret += dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[reaction])
 				//If this reaction isn't related to the specified state then we don't count it
 				* ((model.stoichiometry[reaction].Item1 == i || model.stoichiometry[reaction].Item2 == i) ? 1 : 0);
 			}
@@ -184,7 +190,7 @@ namespace CJSim {
 		const float epsilon = 0.19f; //Error factor, higher means faster but less accurate
 		const float multipleThreshold = 10.0f; //Some small multiple of 1/a0(x) that we usually take to be 10, lower values means we'll do gillespie steps less often
 		const int gillespieSteps = 100; //How many gillespie steps to run if we need to run gillespie steps
-		public static void tauLeapingTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, Random random) {
+		public static void tauLeapingTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float maxTime, Random random) {
 			writeState.setTo(readState);
 			//cjnote I don't like making lists every single time
 			List<int> nonCriticalReactions = new List<int>();
@@ -207,12 +213,12 @@ namespace CJSim {
 				tauCandidate1 = MathF.Min(
 					tauCandidate1,
 					//Because none of our reactions require 2 people gi is always just the HOR
-					MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1) / MathF.Abs(auxiliaryFunctionMu(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions))
+					MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1) / MathF.Abs(auxiliaryFunctionMu(stateIdx, ref readState, ref writeState, model, core, i, nonCriticalReactions))
 				);
 				tauCandidate1 = MathF.Min(
 					tauCandidate1,
 					//Because none of our reactions require 2 people gi is always just the HOR
-					MathF.Pow(MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1),2) / auxiliaryFunctionSigma(stateIdx, ref readState, ref writeState, model, i, nonCriticalReactions)
+					MathF.Pow(MathF.Max(epsilon * (readState.state[i] / (float)model.getHOR(i)), 1),2) / auxiliaryFunctionSigma(stateIdx, ref readState, ref writeState, model, core, i, nonCriticalReactions)
 				);
 			}
 
@@ -222,11 +228,11 @@ namespace CJSim {
 				wouldCauseNegative = false;
 
 				//Step 3, if tauCandidate1 is too small then we do some gillespie steps
-				float propSum = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, model);
+				float propSum = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model);
 				if (tauCandidate1 < (multipleThreshold / propSum)) {
 					DiseaseState fakeRead = new DiseaseState(readState);
 					for (int q = 0; q < gillespieSteps; q++) {
-						SimAlgorithms.gillespieTick(stateIdx, ref fakeRead, ref writeState, model, random);
+						SimAlgorithms.gillespieTick(stateIdx, ref fakeRead, ref writeState, model, core, maxTime, random);
 						fakeRead.setTo(writeState);
 					}
 					return;
@@ -235,7 +241,7 @@ namespace CJSim {
 				//Step 4, get the sum of all the critical reactions and use that to get a second tau candidate
 				float sumCritical = 0.0f;
 				foreach (int idx in criticalReactions) {
-					float thisOne = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[idx]);
+					float thisOne = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[idx]);
 					sumCritical += thisOne;
 				}
 				float tauCandidate2 = (float)(-Math.Log(random.NextDouble()) / sumCritical);
@@ -254,7 +260,7 @@ namespace CJSim {
 					//Collect point probabilities
 					List<Tuple<float, int>> pointProbabilities = new List<Tuple<float, int>>();
 					foreach (int idx in criticalReactions) {
-						float thisOne = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[idx]);
+						float thisOne = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[idx]);
 						pointProbabilities.Add(new Tuple<float, int>(thisOne / sumCritical, idx));
 					}
 					pointProbabilities.Sort();
@@ -290,7 +296,7 @@ namespace CJSim {
 
 				//Non critical reactions
 				foreach (int reactionIdx in nonCriticalReactions) {
-					float prop = dispatchPropensityFunction(stateIdx, ref readState, model, model.reactionFunctionDetails[reactionIdx]) * tau;
+					float prop = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[reactionIdx]) * tau;
 					int reactions = poisson(prop, random);
 					kReactions[reactionIdx] = reactions;
 
