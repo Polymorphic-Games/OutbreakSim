@@ -197,21 +197,27 @@ namespace CJSim {
 				threadFinishedHandles[index].Reset();
 
 				//Update our block of cells
+				//Write state is overwritten in the sim algos functions so no need to re-create it every loop, small optimization
+				DiseaseState writeState = new DiseaseState(readCells[0]);
 				for (int q = blockStart; q < blockEnd; q++) {
+					DiseaseState readState = new DiseaseState(readCells[q]);
+
 					switch (model.modelType) {
 						case ModelType.Deterministic:
-						SimAlgorithms.deterministicTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT);
+						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, threadDT);
 						break;
 						case ModelType.Gillespie:
-						SimAlgorithms.gillespieTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT, random);
+						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, threadDT, random);
 						break;
 						case ModelType.TauLeaping:
-						SimAlgorithms.tauLeapingTick(q, ref readCells[q], ref writeCells[q], model, this, threadDT, random);
+						SimAlgorithms.tauLeapingTick(q, ref readState, ref writeState, model, this, threadDT, random);
 						break;
 						default:
 						ThreadLogger.Log("Default case in this switch???????");
 						break;
 					}
+
+					writeCells[q].setTo(writeState);
 				}
 				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();
