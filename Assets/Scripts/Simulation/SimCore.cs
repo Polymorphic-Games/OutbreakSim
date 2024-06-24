@@ -69,6 +69,7 @@ namespace CJSim {
 		private int _threadCount = -1;
 
 		private Thread[] threads;
+		//DT passed globally to all threads
 		private float threadDT = 1.0f;
 		//Set these to fire the threads
 		private EventWaitHandle[] threadStartHandles;

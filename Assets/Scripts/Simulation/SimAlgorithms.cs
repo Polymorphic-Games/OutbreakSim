@@ -95,16 +95,30 @@ namespace CJSim {
 		#region Gillespie
 
 		//Does a single reaction via the gillespie algorithm
-		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float maxTime, Random random) {
+		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float step, Random random) {
+			//Copy read to write
 			writeState.setTo(readState);
+			ThreadLogger.Log("Gillespie Ticking with " + step);
+
+			//Calculate some parameters
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model);
 			double sumPropsR2 = sumProps * random.NextDouble();
-			float tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+			float tau;
+			//cjnote may need to verify that tau leaping calling this function isn't going to demolish anything
+			if (readState.nextTimestep > 0.0f) {
+				tau = readState.nextTimestep;
+			} else {
+				tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
+			}
 
-			if ((tau + readState.timeSimulated) > maxTime) {
+			if (tau > step) {
+				writeState.nextTimestep = tau - step;
+				writeState.timeSimulated += step;
 				return;
 			}
+			writeState.nextTimestep = -1.0f;
 			
+			//Pick and do a reaction
 			double sum = 0.0f;
 			for (int q = 0; q < model.reactionCount; q++) {
 				double currProp = dispatchPropensityFunction(stateIdx, ref readState, model, core, model.reactionFunctionDetails[q]);
@@ -119,6 +133,12 @@ namespace CJSim {
 				}
 			}
 			writeState.timeSimulated += tau;
+			step -= tau;
+			if (step > 0.0f) {
+				//Swap write and read states here on purpose
+				gillespieTick(stateIdx, ref writeState, ref readState, model, core, step, random);
+				return;
+			}
 		}
 
 		#endregion

@@ -90,6 +90,6 @@ public class SimSandbox : MonoBehaviour {
 
 	private void dumpSim() {
 		Debug.Log("Sim Dump At " + simulation.core.readCells[0].timeSimulated.ToString() + "\n" + simulation.core.readCells[0].ToString());
-		Debug.Log("Sim Dump At " + simulation.core.readCells[1].timeSimulated.ToString() + "\n" + simulation.core.readCells[0].ToString());
+		Debug.Log("Sim Dump At " + simulation.core.readCells[1].timeSimulated.ToString() + "\n" + simulation.core.readCells[1].ToString());
 	}
 }
