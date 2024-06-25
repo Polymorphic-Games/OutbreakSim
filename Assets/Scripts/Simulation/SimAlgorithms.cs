@@ -98,7 +98,7 @@ namespace CJSim {
 		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, float step, Random random) {
 			//Copy read to write
 			writeState.setTo(readState);
-			ThreadLogger.Log("Gillespie Ticking with " + step);
+			ThreadLogger.Log("------Gillespie Ticking with step " + step + " nextTime is " + readState.nextTimestep);
 
 			//Calculate some parameters
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model);
@@ -110,10 +110,12 @@ namespace CJSim {
 			} else {
 				tau = (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
 			}
+			ThreadLogger.Log("Tau is " + tau);
 
 			if (tau > step) {
 				writeState.nextTimestep = tau - step;
 				writeState.timeSimulated += step;
+				ThreadLogger.Log("About to return " + " nextTime is " + writeState.nextTimestep + " step is " + step + " time simmed is " + writeState.timeSimulated);
 				return;
 			}
 			writeState.nextTimestep = -1.0f;
@@ -135,8 +137,8 @@ namespace CJSim {
 			writeState.timeSimulated += tau;
 			step -= tau;
 			if (step > 0.0f) {
-				//Swap write and read states here on purpose
-				gillespieTick(stateIdx, ref writeState, ref readState, model, core, step, random);
+				DiseaseState fakeRead = new DiseaseState(writeState);
+				gillespieTick(stateIdx, ref fakeRead, ref writeState, model, core, step, random);
 				return;
 			}
 		}

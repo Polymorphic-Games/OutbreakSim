@@ -200,6 +200,7 @@ namespace CJSim {
 				//Write state is overwritten in the sim algos functions so no need to re-create it every loop, small optimization
 				DiseaseState writeState = new DiseaseState(readCells[0]);
 				for (int q = blockStart; q < blockEnd; q++) {
+					//cjnote, I don't think this is technically needed, as long as we never write to read state
 					DiseaseState readState = new DiseaseState(readCells[q]);
 
 					switch (model.modelType) {
