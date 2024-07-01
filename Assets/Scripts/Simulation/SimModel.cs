@@ -9,7 +9,8 @@ namespace CJSim {
 	public enum ModelType {
 		Deterministic,
 		TauLeaping,
-		Gillespie
+		Gillespie,
+		GillespieSpatialSingleThreaded //Could technically use the threads to calculate min times in their blocks, then take min of each thread block. But that would take effort for basically no value
 	}
 
 	public class SimModel {

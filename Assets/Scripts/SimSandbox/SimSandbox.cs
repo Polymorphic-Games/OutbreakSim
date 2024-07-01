@@ -14,8 +14,11 @@ public class SimSandbox : MonoBehaviour {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
 		MovementModelAllConnected movementModel = new MovementModelAllConnected(4);
-		movementModel.setCellConnectivity(0, 1, 1.0f);
-		SimModel model = new SimModel(3, 3, 2, movementModel, ModelType.Gillespie);
+		movementModel.setCellConnectivity(0, 1, 0.01f);
+		movementModel.setCellConnectivity(1, 3, 0.01f);
+		movementModel.setCellConnectivity(3, 2, 0.01f);
+		movementModel.setCellConnectivity(2, 0, 0.01f);
+		SimModel model = new SimModel(3, 3, 2, movementModel, ModelType.GillespieSpatialSingleThreaded);
 		//S,I,R,,,S->I,I->R,,,B,R
 		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
 		model.reactionFunctionDetails[1] = new int[]{0,1,1};
@@ -89,7 +92,9 @@ public class SimSandbox : MonoBehaviour {
 	}
 
 	private void dumpSim() {
-		Debug.Log("Sim Dump At " + simulation.core.readCells[0].timeSimulated.ToString() + "\n" + simulation.core.readCells[0].ToString());
-		Debug.Log("Sim Dump At " + simulation.core.readCells[1].timeSimulated.ToString() + "\n" + simulation.core.readCells[1].ToString());
+		Debug.Log("Sim Dump 0 At " + simulation.core.readCells[0].timeSimulated.ToString() + "\n" + simulation.core.readCells[0].ToString());
+		Debug.Log("Sim Dump 1 At " + simulation.core.readCells[1].timeSimulated.ToString() + "\n" + simulation.core.readCells[1].ToString());
+		Debug.Log("Sim Dump 2 At " + simulation.core.readCells[2].timeSimulated.ToString() + "\n" + simulation.core.readCells[2].ToString());
+		Debug.Log("Sim Dump 3 At " + simulation.core.readCells[3].timeSimulated.ToString() + "\n" + simulation.core.readCells[3].ToString());
 	}
 }

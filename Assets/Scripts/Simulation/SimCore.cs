@@ -190,6 +190,10 @@ namespace CJSim {
 
 			Random random = new Random();
 			while (true) {
+				//Used for GillespieSpatialSingleThreaded
+				float minTau = float.MaxValue;
+				int minTauIdx = -1;
+
 				//Wait for update to be requested
 				threadStartHandles[index].WaitOne();
 				//Manual handles
@@ -208,11 +212,20 @@ namespace CJSim {
 						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, threadDT);
 						break;
 						case ModelType.Gillespie:
-						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, threadDT, random);
+						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, random);
 						break;
 						case ModelType.TauLeaping:
 						SimAlgorithms.tauLeapingTick(q, ref readState, ref writeState, model, this, threadDT, random);
 						break;
+						case ModelType.GillespieSpatialSingleThreaded: {
+							//Just assume we're the only thread, if thread count is higher that's on the user
+							float tauCandidate = SimAlgorithms.gillespieNextReactionTime(q, ref readState, ref writeState, model, this, random);
+							if (tauCandidate < minTau) {
+								minTau = tauCandidate;
+								minTauIdx = q;
+							}
+							writeState.setTo(readState);
+						} break;
 						default:
 						ThreadLogger.Log("Default case in this switch???????");
 						break;
@@ -220,6 +233,19 @@ namespace CJSim {
 
 					writeCells[q].setTo(writeState);
 				}
+				//Do the single reaction if we're doing the single threaded gillespie model
+				if (model.modelType == ModelType.GillespieSpatialSingleThreaded && minTauIdx >= 0) {
+					SimAlgorithms.gillespiePerformReaction(minTauIdx, ref readCells[minTauIdx], ref writeState, model, this, random);
+
+					writeCells[minTauIdx].setTo(writeState);
+
+					//All of them have been simulated.
+					for (int q = blockStart; q < blockEnd; q++) {
+						writeCells[q].timeSimulated += minTau;
+					}
+				}
+
+
 				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();
 			}

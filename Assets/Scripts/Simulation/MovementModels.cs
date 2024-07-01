@@ -42,13 +42,13 @@ namespace CJSim {
 
 		//Get the amount of cell connectivity
 		public float getCellConnectivity(int idSource, int idDest) {
-			return 0.0f;
+			return connectivities[(idSource * m_cellCount) + idDest];
 		}
 
 		//Get a list of this cells neighbors
 		//cjnote not sure how bad the performance is on the array allocation
 		public int[] getNeighbors(int idx) {
-			return new int[0];
+			return neighborRet;
 		}
 	}
 }

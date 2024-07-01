@@ -8,13 +8,10 @@ namespace CJSim {
 		//cjnote might make this a double
 		public float timeSimulated;
 
-		public float nextTimestep;
-		
 		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
 			state = new int[stateCount];
 			timeSimulated = 0.0f;
-			nextTimestep = -1.0f;
 			setToZero();
 		}
 
@@ -28,7 +25,6 @@ namespace CJSim {
 		public DiseaseState(DiseaseState other) {
 			state = new int[other.stateCount];
 			timeSimulated = other.timeSimulated;
-			nextTimestep = other.nextTimestep;
 			for (int q = 0; q< other.stateCount; q++) {
 				state[q] = other.state[q];
 			}
@@ -61,7 +57,6 @@ namespace CJSim {
 				state[q] = 0;
 			}
 			timeSimulated = 0.0f;
-			nextTimestep = -1.0f;
 		}
 
 		public override string ToString() {
@@ -83,7 +78,6 @@ namespace CJSim {
 					state[q] = other.state[q];
 				}
 				timeSimulated = other.timeSimulated;
-				nextTimestep = other.nextTimestep;
 			}
 		}
 	}
