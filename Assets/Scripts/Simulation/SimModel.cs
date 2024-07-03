@@ -77,5 +77,23 @@ namespace CJSim {
 			throw new System.NotImplementedException();
 		}
 
+		//Writes a model to a file
+		public void writeToFile(string filename) {
+			throw new System.NotImplementedException();
+		}
+
+		//Validate the model (makes sure things are initialized and not conflicting)
+		//Returns true if everything is alright, false otherwise
+		public bool validate() {
+			//First verify that the user provided arrays are in fact provided
+			for (int q = 0; q < reactionCount; q++) {
+				if (reactionFunctionDetails[q] == null) {
+					return false;
+				}
+			}
+			//Tau leaping can't have spatial anything
+
+			return true;
+		}
 	}
 }
