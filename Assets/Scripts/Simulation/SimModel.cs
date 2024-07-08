@@ -86,12 +86,27 @@ namespace CJSim {
 		//Returns true if everything is alright, false otherwise
 		public bool validate() {
 			//First verify that the user provided arrays are in fact provided
+			//Reaction function details must be provided, how else would we know what parameters go where
 			for (int q = 0; q < reactionCount; q++) {
 				if (reactionFunctionDetails[q] == null) {
 					return false;
 				}
+				//Also check for stoichiometry, how else would we know which states go to which other states
+				if (stoichiometry[q] == null) {
+					return false;
+				}
 			}
+
 			//Tau leaping can't have spatial anything
+			if (modelType == ModelType.TauLeaping) {
+				for (int q = 0; q < reactionFunctionDetails.Length; q++) {
+					//Make sure tau leaping doesn't try to do spatial things,
+					//would likely cause errors due to some poor programming
+					if (reactionFunctionDetails[q][0] == 2) {
+						return false;
+					}
+				}
+			}
 
 			return true;
 		}

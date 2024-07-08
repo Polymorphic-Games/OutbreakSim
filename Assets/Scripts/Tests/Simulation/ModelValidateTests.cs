@@ -10,11 +10,16 @@ public class ModelValidateTests {
 		IMovementModel movementModel = new MovementModelNone();
 		SimModel model = new SimModel(3, 2, 2, movementModel, ModelType.Deterministic);
 		
-		SimCore core = new SimCore(model, 1, 1);
-		
-		Simulation simulation = new Simulation(core);
+		Assert.IsFalse(model.validate());
+		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
+		Assert.IsFalse(model.validate());
+		model.reactionFunctionDetails[1] = new int[]{0,1,1};
+		Assert.IsFalse(model.validate());
 
-		simulation.core.tickSimulation(1.0f);
+		model.stoichiometry[0] = new System.Tuple<int, int>(0,1);
+		Assert.IsFalse(model.validate());
+		model.stoichiometry[1] = new System.Tuple<int, int>(1,2);
+		Assert.IsTrue(model.validate());
 
 	}
 }
