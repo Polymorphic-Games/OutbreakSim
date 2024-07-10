@@ -15,6 +15,7 @@ namespace CJSim {
 
 	public class SimModel {
 		public float[] parameters;
+		public float parameterNoiseModifier; //cjnote not sure how I feel about this being here
 
 		//stoichiometry[0] = (1,2): the 1st reaction goes from 2nd compartment to 3rd compartment
 		public Tuple<int,int>[] stoichiometry;
@@ -51,6 +52,7 @@ namespace CJSim {
 			this.parameterCount = parameterCount;
 			this.modelType = modelType;
 			this.movementModel = movement;
+			this.parameterNoiseModifier = 0.0f;
 
 			stoichiometry = new Tuple<int, int>[reactionCount];
 			reactionFunctionDetails = new int[reactionCount][];
@@ -58,7 +60,7 @@ namespace CJSim {
 		}
 		
 		//Gets the highest order of reaction for this compartment
-		//cjnote should be easy to chache this somewhere
+		//cjnote should be easy to chache this somewhere, it also only used for tau leaping tho so not much need to bother
 		public int getHOR(int compartment) {
 			int HOR = 0;
 			//Search reactions for things affecting this compartment
@@ -71,7 +73,7 @@ namespace CJSim {
 		}
 
 
-		//Loads a model from a file
+		//Loads a model from a file (in a constructor)
 		
 		public SimModel(string filename) {
 			throw new System.NotImplementedException();
@@ -82,8 +84,13 @@ namespace CJSim {
 			throw new System.NotImplementedException();
 		}
 
+		public void loadFromFile(string filename) {
+			throw new System.NotImplementedException();
+		}
+
 		//Validate the model (makes sure things are initialized and not conflicting)
 		//Returns true if everything is alright, false otherwise
+		//Doesn't guarantee that a model will actually work properly, but at the very least it should make sure the model won't crash the simulation
 		public bool validate() {
 			//First verify that the user provided arrays are in fact provided
 			//Reaction function details must be provided, how else would we know what parameters go where

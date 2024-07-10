@@ -18,7 +18,8 @@ public class SimSandbox : MonoBehaviour {
 		movementModel.setCellConnectivity(1, 3, 0.01f);
 		movementModel.setCellConnectivity(3, 2, 0.01f);
 		movementModel.setCellConnectivity(2, 0, 0.01f);
-		SimModel model = new SimModel(3, 3, 2, movementModel, ModelType.GillespieSpatialSingleThreaded);
+		SimModel model = new SimModel(3, 3, 2, movementModel, ModelType.Deterministic);
+		model.parameterNoiseModifier = 0.1f;
 		//S,I,R,,,S->I,I->R,,,B,R
 		model.reactionFunctionDetails[0] = new int[]{1,0,1,0};
 		model.reactionFunctionDetails[1] = new int[]{0,1,1};
@@ -32,13 +33,13 @@ public class SimSandbox : MonoBehaviour {
 		model.parameters[1] = 0.1f;
 		
 		SimCore core = new SimCore(model, 4, 1);
-		core.readCells[0].state[0] = 100;
+		core.readCells[0].state[0] = 100000;
 		core.readCells[0].state[1] = 10;
 		core.readCells[0].state[2] = 0;
 
-		core.readCells[1].state[0] = 100;
-		core.readCells[2].state[0] = 100;
-		core.readCells[3].state[0] = 100;
+		core.readCells[1].state[0] = 100000;
+		core.readCells[2].state[0] = 100000;
+		core.readCells[3].state[0] = 100000;
 		
 		simulation = new Simulation(core);
 

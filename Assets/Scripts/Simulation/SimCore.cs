@@ -209,13 +209,13 @@ namespace CJSim {
 
 					switch (model.modelType) {
 						case ModelType.Deterministic:
-						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, threadDT);
+						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, random, threadDT);
 						break;
 						case ModelType.Gillespie:
 						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, random);
 						break;
 						case ModelType.TauLeaping:
-						SimAlgorithms.tauLeapingTick(q, ref readState, ref writeState, model, this, threadDT, random);
+						SimAlgorithms.tauLeapingTick(q, ref readState, ref writeState, model, this, random);
 						break;
 						case ModelType.GillespieSpatialSingleThreaded: {
 							//Just assume we're the only thread, if thread count is higher that's on the user
