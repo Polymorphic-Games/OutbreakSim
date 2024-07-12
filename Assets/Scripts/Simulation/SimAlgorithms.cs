@@ -83,6 +83,10 @@ namespace CJSim {
 			writeState.timeSimulated += reqTime;
 		}
 
+		public static void deterministicWithGillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, Random random, float reqTime) {
+			
+		}
+
 		#endregion
 
 		#region Helpers
