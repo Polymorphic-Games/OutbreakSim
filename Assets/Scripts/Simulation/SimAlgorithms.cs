@@ -76,7 +76,6 @@ namespace CJSim {
 			writeState.setTo(readState);
 			for (int q = 0; q < model.reactionCount; q++) {
 				float res = (dispatchPropensityFunction(stateIdx, ref readState, model, core, random, model.reactionFunctionDetails[q]) * reqTime) + 0.5f;
-				ThreadLogger.Log("q is " + q + " " + res);
 				writeState.state[model.stoichiometry[q].Item2] += (int)res;
 				writeState.state[model.stoichiometry[q].Item1] -= (int)res;
 			}
