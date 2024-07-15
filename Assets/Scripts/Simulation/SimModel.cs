@@ -8,6 +8,7 @@ namespace CJSim {
 	//Model type determines how the model is processed, i.e deterministically or stochastically
 	public enum ModelType {
 		Deterministic,
+		DeterministicWithGillespie,
 		TauLeaping,
 		Gillespie,
 		GillespieSpatialSingleThreaded //Could technically use the threads to calculate min times in their blocks, then take min of each thread block. But that would take effort for basically no value

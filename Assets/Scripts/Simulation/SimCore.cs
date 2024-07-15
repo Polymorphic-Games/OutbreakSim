@@ -211,6 +211,9 @@ namespace CJSim {
 						case ModelType.Deterministic:
 						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, random, threadDT);
 						break;
+						case ModelType.DeterministicWithGillespie:
+						SimAlgorithms.deterministicWithGillespieTick(q, ref readState, ref writeState, model, this, random, threadDT);
+						break;
 						case ModelType.Gillespie:
 						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, random);
 						break;

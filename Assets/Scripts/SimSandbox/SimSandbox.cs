@@ -18,6 +18,8 @@ public class SimSandbox : MonoBehaviour {
 		movementModel.setCellConnectivity(1, 3, 0.01f);
 		movementModel.setCellConnectivity(3, 2, 0.01f);
 		movementModel.setCellConnectivity(2, 0, 0.01f);
+
+		
 		SimModel model = new SimModel(3, 3, 2, movementModel, ModelType.Deterministic);
 		model.parameterNoiseModifier = 0.2f;
 		//S,I,R,,,S->I,I->R,,,B,R
