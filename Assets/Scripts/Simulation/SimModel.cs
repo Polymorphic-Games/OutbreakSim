@@ -4,42 +4,26 @@ using System;
 //Holds information relating to disease states, algorithms, etc.
 
 namespace CJSim {
-
-	//Model type determines how the model is processed, i.e deterministically or stochastically
-	public enum ModelType {
-		Deterministic,
-		DeterministicWithGillespie,
-		TauLeaping,
-		Gillespie,
-		GillespieSpatialSingleThreaded //Could technically use the threads to calculate min times in their blocks, then take min of each thread block. But that would take effort for basically no value
-	}
-
 	public class SimModel {
-		public float[] parameters;
-		public float parameterNoiseModifier; //cjnote not sure how I feel about this being here
-
-		//stoichiometry[0] = (1,2): the 1st reaction goes from 2nd compartment to 3rd compartment
-		public Tuple<int,int>[] stoichiometry;
-
-		//Contains arguments to the SimAlgorithms class, defines a set of reactions
-		//reactionFunctionDetails[0] = [0,1,2,3]  -  the first reactions, pass these args to SimAlgos
-		public int[][] reactionFunctionDetails;
-		
+		public SimModelProperties properties;
 		public IMovementModel movementModel;
 
 		#region Properties
-
-		//The tpye of this model
-		public ModelType modelType {private set; get;}
 		
 		//The number of different reactions in the model
-		public int reactionCount {private set; get;}
+		public int reactionCount {get {
+			return properties.reactionFunctionDetails.Length;
+		}}
 
 		//The number of compartments in this model
-		public int compartmentCount {private set; get;}
+		public int compartmentCount {get {
+			return properties.compartmentCount;
+		}}
 
 		//The number of parameters in this model
-		public int parameterCount {private set; get;}
+		public int parameterCount {get {
+			return properties.parameters.Length;
+		}}
 
 		#endregion
 		
@@ -47,17 +31,9 @@ namespace CJSim {
 
 		//The 'count' constructor, used for when you have some code to populate the various necessary fields
 		//Makes the basic data structures have the correct size, just unpopulated
-		public SimModel(int compartmentCount, int reactionCount, int parameterCount, IMovementModel movement, ModelType modelType) {
-			this.reactionCount = reactionCount;
-			this.compartmentCount = compartmentCount;
-			this.parameterCount = parameterCount;
-			this.modelType = modelType;
+		public SimModel(SimModelProperties properties, IMovementModel movement) {
+			this.properties = properties;
 			this.movementModel = movement;
-			this.parameterNoiseModifier = 0.0f;
-
-			stoichiometry = new Tuple<int, int>[reactionCount];
-			reactionFunctionDetails = new int[reactionCount][];
-			parameters = new float[parameterCount];
 		}
 		
 		//Gets the highest order of reaction for this compartment
