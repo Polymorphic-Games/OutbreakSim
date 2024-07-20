@@ -76,26 +76,12 @@ namespace CJSim {
 		//Threads set these when they're done
 		private EventWaitHandle[] threadFinishedHandles;
 
-		public DiseaseState[] readCells;
-		private DiseaseState[] writeCells;
-
 		public SimModel model {get; private set;}
 		
 
 		#endregion
 
 		#region Functions
-
-		//Initializes cell arrays in a very basic way
-		//Anything complex needs to be done by you
-		private void initCells(int _cellCount) {
-			readCells = new DiseaseState[_cellCount];
-			writeCells = new DiseaseState[_cellCount];
-			for (int q = 0; q < _cellCount; q++) {
-				readCells[q] = new DiseaseState(model);
-				writeCells[q] = new DiseaseState(model);
-			}
-		}
 
 		private void onThreadCountChange() {
 			//If there is anything to dispose of
@@ -196,57 +182,12 @@ namespace CJSim {
 
 				//Wait for update to be requested
 				threadStartHandles[index].WaitOne();
-				//Manual handles
+				//Manual handles need to be reset
 				threadStartHandles[index].Reset();
 				threadFinishedHandles[index].Reset();
+				
 
-				//Update our block of cells
-				//Write state is overwritten in the sim algos functions so no need to re-create it every loop, small optimization
-				DiseaseState writeState = new DiseaseState(readCells[0]);
-				for (int q = blockStart; q < blockEnd; q++) {
-					//cjnote, I don't think this is technically needed, as long as we never write to read state
-					DiseaseState readState = new DiseaseState(readCells[q]);
-
-					switch (model.modelType) {
-						case ModelType.Deterministic:
-						SimAlgorithms.deterministicTick(q, ref readState, ref writeState, model, this, random, threadDT);
-						break;
-						case ModelType.DeterministicWithGillespie:
-						SimAlgorithms.deterministicWithGillespieTick(q, ref readState, ref writeState, model, this, random, threadDT);
-						break;
-						case ModelType.Gillespie:
-						SimAlgorithms.gillespieTick(q, ref readState, ref writeState, model, this, random);
-						break;
-						case ModelType.TauLeaping:
-						SimAlgorithms.tauLeapingTick(q, ref readState, ref writeState, model, this, random);
-						break;
-						case ModelType.GillespieSpatialSingleThreaded: {
-							//Just assume we're the only thread, if thread count is higher that's on the user
-							float tauCandidate = SimAlgorithms.gillespieNextReactionTime(q, ref readState, ref writeState, model, this, random);
-							if (tauCandidate < minTau) {
-								minTau = tauCandidate;
-								minTauIdx = q;
-							}
-							writeState.setTo(readState);
-						} break;
-						default:
-						ThreadLogger.Log("Default case in this switch???????");
-						break;
-					}
-
-					writeCells[q].setTo(writeState);
-				}
-				//Do the single reaction if we're doing the single threaded gillespie model
-				if (model.modelType == ModelType.GillespieSpatialSingleThreaded && minTauIdx >= 0) {
-					SimAlgorithms.gillespiePerformReaction(minTauIdx, ref readCells[minTauIdx], ref writeState, model, this, random);
-
-					writeCells[minTauIdx].setTo(writeState);
-
-					//All of them have been simulated.
-					for (int q = blockStart; q < blockEnd; q++) {
-						writeCells[q].timeSimulated += minTau;
-					}
-				}
+				//Update the cells here
 
 
 				//Let the main thread know we've finished
@@ -257,7 +198,7 @@ namespace CJSim {
 		#endregion
 
 		//Basic simulation isnitialization
-		public SimCore(SimModel simModel, int cellCount, int threadCountParam = -1) {
+		public SimCore(SimModel simModel, int threadCountParam = -1) {
 			//Initialize arrays to nothings
 			threads = new Thread[0];
 			threadStartHandles = new EventWaitHandle[0];

@@ -30,8 +30,9 @@ namespace CJSim {
 			}
 		}
 
-		//Constructor for the lazy man
-		public DiseaseState(SimModel model) : this(model.compartmentCount) {}
+		//Constructors for the lazy man
+		public DiseaseState(SimModel model) : this(model.properties.compartmentCount) {}
+		public DiseaseState(SimModelProperties props) : this(props.compartmentCount) {}
 
 		//Shorthand for getting the number of states (compartments)
 		public int stateCount {

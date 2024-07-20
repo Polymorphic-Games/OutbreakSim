@@ -1,15 +1,12 @@
 //Holds algorithms that operate on disease states
+//Currently in the process of being gutted
 using System;
 using System.Collections.Generic;
 
 namespace CJSim {
 	class SimAlgorithms {
 		#region Propensity Functions
-		public delegate float ReactionFunctionTypes(int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv);
-		//Very important number! The static initializer will error out if this is too low!
-		public const int propensityFunctionTypeCount = 3;
 
-		public static ReactionFunctionTypes[] reactionFuncTypes;
 
 		//Runs the correct propensity function given the magic numbers to describe it
 		public static float dispatchPropensityFunction(int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv) {
@@ -19,39 +16,6 @@ namespace CJSim {
 		//cjnote, this is called for every single parameter always,
 		private static float paramNoise(SimModel model, Random random) {
 			return 1.0f + (float)((double)model.parameterNoiseModifier * random.NextDouble());
-		}
-
-		//Static initializer
-		//If this function errors and the static initializer ran on a thread, unity will not display any error message
-		static SimAlgorithms() {
-			//Set up propensity functions
-			reactionFuncTypes = new ReactionFunctionTypes[propensityFunctionTypeCount];
-
-			//Basic type, state (idx 1) * param (idx 2)
-			reactionFuncTypes[0] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv) => {
-				return (float)state.state[argv[1]] * model.parameters[argv[2]] * paramNoise(model, random);
-			};
-
-			//Grey arrow, page 16 of the book, thing that depends on the density of infected
-			// (param * state1 * state2) / NumberOfPeopleInState
-			// (idx3 * idx2 * idx1) / Num
-			reactionFuncTypes[1] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv) => {
-				return paramNoise(model, random) * model.parameters[argv[3]] * ((state.state[argv[2]] * (float)state.state[argv[1]]) / (float)state.numberOfPeople);
-			};
-
-			//Here we would include the neighbor movement factor, which also needs some neighbor getting function and the cell conectivity param
-			//We'll put all of that into simulation model I think?
-			// (param(beta) * state1(sus)) * (neighborStuff * state2(infected))
-			// (idx1 * idx2) * (neighborStuff * idx3)
-			reactionFuncTypes[2] = (int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv) => {
-				int[] neighbors = model.movementModel.getNeighbors(stateIdx);
-
-				float neighborFactor = 0.0f;
-				for (int q = 0; q < neighbors.Length; q++) {
-					neighborFactor += model.movementModel.getCellConnectivity(neighbors[q], stateIdx) * ((float)core.readCells[neighbors[q]].state[argv[3]] / state.numberOfPeople);
-				}
-				return paramNoise(model, random) * model.parameters[argv[1]] * state.state[argv[2]] * (neighborFactor);
-			};
 		}
 
 		public static int getOrderOfReaction(int reactionId) {
