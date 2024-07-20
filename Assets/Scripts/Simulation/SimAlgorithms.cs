@@ -5,32 +5,6 @@ using System.Collections.Generic;
 
 namespace CJSim {
 	class SimAlgorithms {
-		#region Propensity Functions
-
-
-		//Runs the correct propensity function given the magic numbers to describe it
-		public static float dispatchPropensityFunction(int stateIdx, ref DiseaseState state, SimModel model, SimCore core, Random random, int[] argv) {
-			return reactionFuncTypes[argv[0]](stateIdx, ref state, model, core, random, argv);
-		}
-
-		//cjnote, this is called for every single parameter always,
-		private static float paramNoise(SimModel model, Random random) {
-			return 1.0f + (float)((double)model.parameterNoiseModifier * random.NextDouble());
-		}
-
-		public static int getOrderOfReaction(int reactionId) {
-			switch(reactionId) {
-				case 0:
-				return 1;
-				case 1:
-				return 2;
-				default:
-				ThreadLogger.Log("Default case in getOrderOfReaction switch?????????");
-				throw new Exception();
-			}
-		}
-
-		#endregion
 
 
 		#region Determinstic
@@ -49,67 +23,6 @@ namespace CJSim {
 
 		public static void deterministicWithGillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, Random random, float reqTime) {
 			
-		}
-
-		#endregion
-
-		#region Helpers
-
-		//Returns the sum of all the propensity functions for this state
-		private static float sumOfPropensityFunctions(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimCore core, SimModel model, Random random) {
-			float res = 0.0f;
-			for (int q = 0; q < model.reactionCount; q++) {
-				res += dispatchPropensityFunction(stateIdx, ref readState, model, core, random, model.reactionFunctionDetails[q]);
-			}
-			return res;
-		}
-
-		#endregion
-
-		#region Gillespie
-
-		public static float gillespieNextReactionTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, Random random) {
-			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model, random);
-			return (float)((1.0 / sumProps) * Math.Log(1.0 / random.NextDouble()));
-		}
-
-		//Returns the index of the reaction performed
-		//Does not update timeSimulated as this function does not rely on tau
-		public static int gillespiePerformReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, Random random) {
-			//Thinking we'll break the gillespie algo into a few parts, with this we'll be able to have the spatially explicit one
-			//Which I'm thinking is just not possible without really only doing 1 reaction at a time, otherwise things go to shit
-
-			//Thinking for the actual large scale simulation will probably just do deterministic with some noise
-			//But for smaller scale things I think having the gillespie algo around as spatial and non-spatial is good
-			//Tau leaping might just be non-spatial only, unless we want to divy it up in the same way as the gillespie algorithm
-			writeState.setTo(readState);
-			//Pick and do a reaction
-			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState, ref writeState, core, model, random);
-			double sumPropsR2 = sumProps * random.NextDouble();
-			double sum = 0.0f;
-			for (int q = 0; q < model.reactionCount; q++) {
-				double currProp = dispatchPropensityFunction(stateIdx, ref readState, model, core, random, model.reactionFunctionDetails[q]);
-				sum += currProp;
-				if (sum > sumPropsR2) {
-					//This is the reaction we do
-					writeState.state[model.stoichiometry[q].Item1] -= 1;
-					writeState.state[model.stoichiometry[q].Item2] += 1;
-					return q;
-				}
-			}
-			ThreadLogger.Log("This isn't supposed to happen plz fix");
-			return -1;
-		}
-
-		//Does a single reaction via the gillespie algorithm
-		public static void gillespieTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, SimModel model, SimCore core, Random random) {
-			//Copy read to write
-			writeState.setTo(readState);
-
-			float tau = gillespieNextReactionTime(stateIdx, ref readState, ref writeState, model, core, random);
-			gillespiePerformReaction(stateIdx, ref readState, ref writeState, model, core, random);
-
-			writeState.timeSimulated += tau;
 		}
 
 		#endregion

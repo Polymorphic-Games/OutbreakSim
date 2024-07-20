@@ -31,7 +31,7 @@ namespace CJSim {
 		//Always read from readCells, write to writeCells
 		//Unless we are from outside the simulation, then we must write to readCells when the sim isn't running
 		public DiseaseState[] readCells;
-		private DiseaseState[] writeCells;
+		public DiseaseState[] writeCells;
 
 		public SimModelProperties(int compartmentCount, int reactionCount, int parameterCount, int cellCount) {
 			stoichiometry = new Tuple<int, int>[reactionCount];

@@ -6,9 +6,9 @@ namespace CJSim {
 		//Not used by the deterministic model, but for many will return the next timestep to go to
 		public abstract double getNextReactionsTime(ref DiseaseState readState, int stateIdx);
 		//Perform reactions, if the model cares about the time you can include it here
-		public abstract void performReactions(ref DiseaseState readState, int stateIdx, double time);
+		public abstract void performReactions(ref DiseaseState readState, ref DiseaseState writeState, int stateIdx, double time);
 		//Does a full tick, the time parameter may or may not be used
-		public abstract void fullTick(double time);
+		public abstract void fullTick(ref DiseaseState readState, ref DiseaseState writeState, int stateIdx, double time);
 
 		public SimModel model { get; private set; }
 		protected SimModelAlgorithm(SimModel model) {
@@ -51,6 +51,15 @@ namespace CJSim {
 				* ((float)model.properties.readCells[neighbors[q]].state[argv[3]] / state.numberOfPeople);
 			}
 			return model.properties.parameters[argv[1]] * state.state[argv[2]] * (neighborFactor);
+		}
+
+		public static int getOrderOfReaction(int reactionId) {
+			switch(reactionId) {
+				case 0: return 1;
+				case 1: return 2;
+				default: ThreadLogger.Log("Default case in getOrderOfReaction switch?????????");
+				throw new System.Exception();
+			}
 		}
 
 		// Helper Functions \\

@@ -6,7 +6,7 @@ namespace CJSim {
 	public struct DiseaseState {
 		public readonly int[] state;
 		//cjnote might make this a double
-		public float timeSimulated;
+		public double timeSimulated;
 
 		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {

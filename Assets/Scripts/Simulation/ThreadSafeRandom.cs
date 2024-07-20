@@ -6,7 +6,7 @@ namespace CJSim {
 		private static readonly Random _global = new Random();
 		[ThreadStatic] private static Random _local;
 
-		public static double Next() {
+		public static double NextDouble() {
 			if (_local == null) {
 				int seed;
 				lock (_global) {
