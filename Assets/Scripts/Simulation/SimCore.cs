@@ -36,12 +36,6 @@ namespace CJSim {
 			}
 		}
 
-		public int cellCount {
-			get {
-				return readCells.Length;
-			}
-		}
-
 		//Get/set thread count
 		//Trying to set the threadcount while the simulation is running will error
 		//Verify that the simulation is not running before updating this
@@ -149,9 +143,9 @@ namespace CJSim {
 		//Called when threads are finished for the tick
 		public void onThreadsDone() {
 			//Swap cell buffers
-			DiseaseState[] tmp = readCells;
-			readCells = writeCells;
-			writeCells = tmp;
+			DiseaseState[] tmp = model.properties.readCells;
+			model.properties.readCells = model.properties.writeCells;
+			model.properties.writeCells = tmp;
 			postCellUpdates?.Invoke();
 		}
 
@@ -166,13 +160,13 @@ namespace CJSim {
 		private void threadUpdate(object objIndex) {
 			int index = (int)objIndex;
 			//How many cells does each thread deal with?
-			int blockSize = cellCount + (threadCount - (cellCount % threadCount));
+			int blockSize = model.properties.cellCount + (threadCount - (model.properties.cellCount % threadCount));
 			
 
 			//Calculate our block
 			int blockStart = index * blockSize;
 			int blockEnd = (index + 1) * blockSize;
-			blockEnd = blockEnd <= cellCount ? blockEnd : cellCount;
+			blockEnd = blockEnd <= model.properties.cellCount ? blockEnd : model.properties.cellCount;
 
 			Random random = new Random();
 			while (true) {
@@ -210,7 +204,6 @@ namespace CJSim {
 				threadCount = threadCountParam;
 			}
 			model = simModel;
-			initCells(cellCount);
 		}
 
 	}

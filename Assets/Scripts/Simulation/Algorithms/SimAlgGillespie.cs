@@ -3,8 +3,8 @@ using System;
 namespace CJSim {
 	public class SimAlgGillespie : SimModelAlgorithm {
 
-		public SimAlgGillespie(SimModel model) : base(model) {
-
+		public SimAlgGillespie() : base() {
+			//No initialization needed
 		}
 
 		public override double getNextReactionsTime(ref DiseaseState readState, int stateIdx) {

@@ -11,12 +11,15 @@ namespace CJSim {
 		public abstract void fullTick(ref DiseaseState readState, ref DiseaseState writeState, int stateIdx, double time);
 
 		public SimModel model { get; private set; }
-		protected SimModelAlgorithm(SimModel model) {
-			this.model = model;
-
+		protected SimModelAlgorithm() {
 			reactionFuncTypes[0] = propensityFunction0;
 			reactionFuncTypes[1] = propensityFunction1;
 			reactionFuncTypes[2] = propensityFunction2;
+		}
+
+		//Please call this when we assemble a SimModel, algos needs to know a lot of stuff
+		public void onModelCreate(SimModel model) {
+			this.model = model;
 		}
 
 		// Propensity Functions \\

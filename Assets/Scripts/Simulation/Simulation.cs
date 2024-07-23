@@ -7,6 +7,12 @@ namespace CJSim {
 		public SimCore core;
 		public SimClock clock;
 
+		public SimModel model {
+			get {
+				return core.model;
+			}
+		}
+
 		public Simulation(SimModel model, int cellCount) {
 			core = new SimCore(model, cellCount);
 		}

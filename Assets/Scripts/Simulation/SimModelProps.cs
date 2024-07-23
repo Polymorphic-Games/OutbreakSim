@@ -49,7 +49,7 @@ namespace CJSim {
 			//Search reactions for things affecting this compartment
 			for (int q = 0; q < reactionCount; q++) {
 				if (stoichiometry[q].Item1 == compartment || stoichiometry[q].Item2 == compartment) {
-					HOR = Math.Max(HOR, SimAlgorithms.getOrderOfReaction(reactionFunctionDetails[q][0]));
+					HOR = Math.Max(HOR, SimModelAlgorithm.getOrderOfReaction(reactionFunctionDetails[q][0]));
 				}
 			}
 			return HOR;
