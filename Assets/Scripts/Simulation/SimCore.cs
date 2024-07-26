@@ -170,10 +170,6 @@ namespace CJSim {
 
 			Random random = new Random();
 			while (true) {
-				//Used for GillespieSpatialSingleThreaded
-				float minTau = float.MaxValue;
-				int minTauIdx = -1;
-
 				//Wait for update to be requested
 				threadStartHandles[index].WaitOne();
 				//Manual handles need to be reset
@@ -182,7 +178,14 @@ namespace CJSim {
 				
 
 				//Update the cells here
-
+				if (model.algorithm is SimAlgSingleThreaded) {
+					SimAlgSingleThreaded alg = model.algorithm as SimAlgSingleThreaded;
+					alg.updateAll();
+				} else {
+					for (int q = blockStart; q < blockEnd; q++) {
+						model.algorithm.fullTick(q, ref model.properties.writeCells[q], threadDT);
+					}
+				}
 
 				//Let the main thread know we've finished
 				threadFinishedHandles[index].Set();

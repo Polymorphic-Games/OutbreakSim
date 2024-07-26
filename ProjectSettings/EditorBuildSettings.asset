@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SimSandbox.unity
+    path: Assets/Scenes/SimSandboxMulti.unity
     guid: 2dfdf05a41a1ecd4297663deee590cbb
   m_configObjects: {}

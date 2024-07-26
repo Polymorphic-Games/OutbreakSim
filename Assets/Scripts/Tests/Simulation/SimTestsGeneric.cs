@@ -45,9 +45,9 @@ public class SimTestsGeneric {
 		Simulation simulation = new Simulation(core);
 		
 		simulation.core.tickSimulation(0.5f);
-		Assert.AreEqual(simulation.model.properties.readCells[0].timeSimulated, 0.5f, 0.01f);
-		Assert.AreEqual(simulation.model.properties.readCells[1].timeSimulated, 0.5f, 0.01f);
-		Assert.AreEqual(simulation.model.properties.readCells[2].timeSimulated, 0.5f, 0.01f);
-		Assert.AreEqual(simulation.model.properties.readCells[3].timeSimulated, 0.5f, 0.01f);
+		Assert.AreEqual(0.5f, simulation.model.properties.readCells[0].timeSimulated, 0.01f);
+		Assert.AreEqual(0.5f, simulation.model.properties.readCells[1].timeSimulated, 0.01f);
+		Assert.AreEqual(0.5f, simulation.model.properties.readCells[2].timeSimulated, 0.01f);
+		Assert.AreEqual(0.5f, simulation.model.properties.readCells[3].timeSimulated, 0.01f);
 	}
 }

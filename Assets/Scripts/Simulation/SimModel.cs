@@ -14,7 +14,7 @@ namespace CJSim {
 			this.properties = properties;
 			this.movementModel = movement;
 			this.algorithm = algorithm;
-
+			
 			algorithm.onModelCreate(this);
 		}
 

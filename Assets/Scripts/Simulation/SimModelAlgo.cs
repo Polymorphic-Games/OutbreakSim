@@ -4,21 +4,25 @@ namespace CJSim {
 		// Abstract Public Functions \\
 
 		//Not used by the deterministic model, but for many will return the next timestep to go to
-		public abstract double getNextReactionsTime(ref DiseaseState readState, int stateIdx);
+		public abstract double getNextReactionsTime(int stateIdx);
 		//Perform reactions, if the model cares about the time you can include it here
-		public abstract void performReactions(ref DiseaseState readState, ref DiseaseState writeState, int stateIdx, double time);
+		public abstract void performReactions(int stateIdx, ref DiseaseState writeState, double time);
 		//Does a full tick, the time parameter may or may not be used
-		public abstract void fullTick(ref DiseaseState readState, ref DiseaseState writeState, int stateIdx, double time);
+		public void fullTick(int stateIdx, ref DiseaseState writeState, double time) {
+			performReactions(stateIdx, ref writeState, getNextReactionsTime(stateIdx));
+		}
 
 		public SimModel model { get; private set; }
 		protected SimModelAlgorithm() {
+			//I suppose this could be a list...
+			reactionFuncTypes = new ReactionFunctionTypes[propensityFunctionTypeCount];
 			reactionFuncTypes[0] = propensityFunction0;
 			reactionFuncTypes[1] = propensityFunction1;
 			reactionFuncTypes[2] = propensityFunction2;
 		}
 
 		//Please call this when we assemble a SimModel, algos needs to know a lot of stuff
-		public void onModelCreate(SimModel model) {
+		public virtual void onModelCreate(SimModel model) {
 			this.model = model;
 		}
 
@@ -72,10 +76,10 @@ namespace CJSim {
 		}
 
 		//Returns the sum of all the propensity functions for this state
-		public float sumOfPropensityFunctions(ref DiseaseState readState, int stateIdx) {
+		public float sumOfPropensityFunctions(int stateIdx) {
 			float res = 0.0f;
 			for (int q = 0; q < model.properties.reactionCount; q++) {
-				res += dispatchPropensityFunction(ref readState, stateIdx, model.properties.reactionFunctionDetails[q]);
+				res += dispatchPropensityFunction(ref model.properties.readCells[stateIdx], stateIdx, model.properties.reactionFunctionDetails[q]);
 			}
 			return res;
 		}
