@@ -27,7 +27,7 @@ namespace CJSim {
 					writeState.state[model.properties.stoichiometry[q].Item1] -= 1;
 					writeState.state[model.properties.stoichiometry[q].Item2] += 1;
 					writeState.timeSimulated += time;
-					break;
+					return;
 				}
 			}
 			ThreadLogger.Log("This isn't supposed to happen plz fix");
