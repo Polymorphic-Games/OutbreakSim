@@ -23,6 +23,7 @@ namespace CJSim {
 		}
 
 		//Please call this when we assemble a SimModel, algos needs to know a lot of stuff
+		//Couldn't figure out a different way of doing this what can I say
 		public virtual void onModelCreate(SimModel model) {
 			this.model = model;
 		}
