@@ -27,7 +27,7 @@ public class SimSandbox : MonoBehaviour {
 		props.readCells[0].state[1] = 10;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgSingleThreaded(new SimAlgGillespie());
+		SimModelAlgorithm algorithm = new SimAlgGillespie();
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 

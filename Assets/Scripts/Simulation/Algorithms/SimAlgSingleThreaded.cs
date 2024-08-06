@@ -14,19 +14,19 @@ namespace CJSim {
 		}
 
 		//Pass these function to the real algorithm
-		public override double getNextReactionsTime(int stateIdx) {
-			return algorithm.getNextReactionsTime(stateIdx);
+		public override double getNextReactionsTime(int stateIdx, double time) {
+			return algorithm.getNextReactionsTime(stateIdx, time);
 		}
 		public override void performReactions(int stateIdx, ref DiseaseState writeState, double time) {
 			algorithm.performReactions(stateIdx, ref writeState, time);
 		}
 
-		public void updateAll() {
+		public void updateAll(double time) {
 			//Get the smallest update any cell wants to do
 			double minTime = double.MaxValue;
 			int cellIdx = -1;
 			for (int q = 0; q < model.properties.cellCount; q++) {
-				double nextTime = getNextReactionsTime(q);
+				double nextTime = getNextReactionsTime(q, time);
 				if (minTime > nextTime) {
 					cellIdx = q;
 					minTime = nextTime;

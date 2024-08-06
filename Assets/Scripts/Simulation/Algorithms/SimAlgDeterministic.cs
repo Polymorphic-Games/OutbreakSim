@@ -1,17 +1,14 @@
-using System;
-using System.Xml;
 
 namespace CJSim {
-	public class SimAlgGillespie : SimModelAlgorithm {
-
-		public SimAlgGillespie() : base() {
+	public class SimAlgDeterministic : SimModelAlgorithm {
+		public SimAlgDeterministic() : base() {
 			//No initialization needed
 		}
 
 		public override double getNextReactionsTime(int stateIdx, double time) {
-			double sumProps = sumOfPropensityFunctions(stateIdx);
-			return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextDouble()));
+			return time;
 		}
+		
 		//Perform reactions, if the model cares about the time you can include it here
 		public override void performReactions(int stateIdx, ref DiseaseState writeState, double time) {
 			writeState.setTo( model.properties.readCells[stateIdx]);
@@ -30,6 +27,7 @@ namespace CJSim {
 					return;
 				}
 			}
+			ThreadLogger.Log("This isn't supposed to happen plz fix");
 		}
 	}
 }

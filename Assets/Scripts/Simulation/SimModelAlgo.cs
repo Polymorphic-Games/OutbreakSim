@@ -4,12 +4,13 @@ namespace CJSim {
 		// Abstract Public Functions \\
 
 		//Not used by the deterministic model, but for many will return the next timestep to go to
-		public abstract double getNextReactionsTime(int stateIdx);
+		//Pass the time parameter to request a specific time
+		public abstract double getNextReactionsTime(int stateIdx, double time);
 		//Perform reactions, if the model cares about the time you can include it here
 		public abstract void performReactions(int stateIdx, ref DiseaseState writeState, double time);
 		//Does a full tick, the time parameter may or may not be used
 		public void fullTick(int stateIdx, ref DiseaseState writeState, double time) {
-			performReactions(stateIdx, ref writeState, getNextReactionsTime(stateIdx));
+			performReactions(stateIdx, ref writeState, getNextReactionsTime(stateIdx, time));
 		}
 
 		public SimModel model { get; private set; }

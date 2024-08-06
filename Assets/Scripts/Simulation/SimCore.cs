@@ -180,7 +180,7 @@ namespace CJSim {
 				//Update the cells here
 				if (model.algorithm is SimAlgSingleThreaded) {
 					SimAlgSingleThreaded alg = model.algorithm as SimAlgSingleThreaded;
-					alg.updateAll();
+					alg.updateAll(threadDT);
 				} else {
 					for (int q = blockStart; q < blockEnd; q++) {
 						model.algorithm.fullTick(q, ref model.properties.writeCells[q], threadDT);
