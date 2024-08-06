@@ -3,8 +3,8 @@ using System;
 //Holds properties of a simulation model, things like compartments, stoichiometry, reactions, etc.
 namespace CJSim {
 	public class SimModelProperties {
-		//Sim parameters, just floats that impact the compartmental model
-		public float[] parameters;
+		//Sim parameters, just doubles that impact the compartmental model
+		public double[] parameters;
 
 		//stoichiometry[0] = (1,2): the 1st reaction goes from 2nd compartment to 3rd compartment
 		public Tuple<int,int>[] stoichiometry;
@@ -36,7 +36,7 @@ namespace CJSim {
 		public SimModelProperties(int compartmentCount, int reactionCount, int parameterCount, int cellCount) {
 			stoichiometry = new Tuple<int, int>[reactionCount];
 			reactionFunctionDetails = new int[reactionCount][];
-			parameters = new float[parameterCount];
+			parameters = new double[parameterCount];
 			this.compartmentCount = compartmentCount;
 
 			initCells(cellCount);

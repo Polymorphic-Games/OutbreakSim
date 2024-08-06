@@ -64,7 +64,7 @@ namespace CJSim {
 
 		private Thread[] threads;
 		//DT passed globally to all threads
-		private float threadDT = 1.0f;
+		private double threadDT = 1.0f;
 		//Set these to fire the threads
 		private EventWaitHandle[] threadStartHandles;
 		//Threads set these when they're done
@@ -106,7 +106,7 @@ namespace CJSim {
 		}
 
 		//Begins a new tick
-		public void beginTick(float dt = 1.0f) {
+		public void beginTick(double dt = 1.0) {
 			threadDT = dt;
 			for (int q = 0; q < threadStartHandles.Length; q++) {
 				threadStartHandles[q].Set();
@@ -152,7 +152,7 @@ namespace CJSim {
 		//The joke lives on (although I doubt it is comprehensible as a joke anymore)
 		//Ticks the simulation in full, synchronously
 		//Still makes threads and fires events, things just happen faster and will likely cause a stutter in framerate
-		public void tickSimulation(float dt) {
+		public void tickSimulation(double dt) {
 			beginTick(dt);
 			forceEndTick();
 		}

@@ -11,23 +11,18 @@ namespace CJSim {
 		
 		//Perform reactions, if the model cares about the time you can include it here
 		public override void performReactions(int stateIdx, ref DiseaseState writeState, double time) {
-			writeState.setTo( model.properties.readCells[stateIdx]);
-			//Pick and do a reaction
-			double sumProps = sumOfPropensityFunctions(stateIdx);
-			double sumPropsR2 = sumProps * ThreadSafeRandom.NextDouble();
-			double sum = 0.0f;
+			writeState.setTo(model.properties.readCells[stateIdx]);
+
 			for (int q = 0; q < model.properties.reactionCount; q++) {
-				double currProp = dispatchPropensityFunction(ref model.properties.readCells[stateIdx], stateIdx, model.properties.reactionFunctionDetails[q]);
-				sum += currProp;
-				if (sum > sumPropsR2) {
-					//This is the reaction we do
-					writeState.state[model.properties.stoichiometry[q].Item1] -= 1;
-					writeState.state[model.properties.stoichiometry[q].Item2] += 1;
-					writeState.timeSimulated += time;
-					return;
-				}
+				//Calculate this propensity function value, also add .5 for rounding
+				double res = ((double)dispatchPropensityFunction(
+					ref model.properties.readCells[stateIdx], stateIdx, model.properties.reactionFunctionDetails[q]
+					) * time) + 0.5;
+				writeState.state[model.properties.stoichiometry[q].Item2] += (int)res;
+				writeState.state[model.properties.stoichiometry[q].Item1] -= (int)res;
 			}
-			ThreadLogger.Log("This isn't supposed to happen plz fix");
+
+			writeState.timeSimulated += time;
 		}
 	}
 }
