@@ -43,7 +43,7 @@ namespace CJSim {
 		}
 
 		//Gets the highest order of reaction for this compartment
-		//cjnote should be easy to chache this somewhere, it also only used for tau leaping tho so not much need to bother
+		//cjnote should be easy to cache this somewhere, it's also only used for tau leaping tho so not much need to bother
 		public int getHOR(int compartment) {
 			int HOR = 0;
 			//Search reactions for things affecting this compartment

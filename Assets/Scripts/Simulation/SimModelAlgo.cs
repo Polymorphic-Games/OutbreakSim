@@ -66,7 +66,7 @@ namespace CJSim {
 			switch(reactionId) {
 				case 0: return 1;
 				case 1: return 2;
-				default: ThreadLogger.Log("Default case in getOrderOfReaction switch?????????");
+				default: ThreadLogger.Log("Default case in getOrderOfReaction switch");
 				throw new System.Exception();
 			}
 		}

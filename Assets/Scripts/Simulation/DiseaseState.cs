@@ -10,7 +10,7 @@ namespace CJSim {
 		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
 			state = new int[stateCount];
-			timeSimulated = 0.0f;
+			timeSimulated = 0.0;
 			setToZero();
 		}
 
@@ -56,7 +56,7 @@ namespace CJSim {
 			for (int q = 0; q < stateCount; q++) {
 				state[q] = 0;
 			}
-			timeSimulated = 0.0f;
+			timeSimulated = 0.0;
 		}
 
 		public override string ToString() {
