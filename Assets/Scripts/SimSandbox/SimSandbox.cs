@@ -27,7 +27,7 @@ public class SimSandbox : MonoBehaviour {
 		props.readCells[0].state[1] = 100;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgDeterministic();
+		SimModelAlgorithm algorithm = new SimAlgDeterministic(0.2);
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 

@@ -8,7 +8,7 @@ namespace CJSim {
 			//No initialization needed
 		}
 
-		public override double getNextReactionsTime(int stateIdx, double time) {
+		public override double getNextReactionTime(int stateIdx) {
 			double sumProps = sumOfPropensityFunctions(stateIdx);
 			return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextDouble()));
 		}
@@ -26,10 +26,14 @@ namespace CJSim {
 					//This is the reaction we do
 					writeState.state[model.properties.stoichiometry[q].Item1] -= 1;
 					writeState.state[model.properties.stoichiometry[q].Item2] += 1;
-					writeState.timeSimulated += getNextReactionsTime(stateIdx, 0.0);
+					writeState.timeSimulated += getNextReactionTime(stateIdx);
 					return;
 				}
 			}
+		}
+
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState writeState, double time) {
+			
 		}
 	}
 }

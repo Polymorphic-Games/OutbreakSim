@@ -19,7 +19,11 @@ namespace CJSim {
 		//Which compartments are associated with which reactions
 		int[][] speciesReactionDependency;
 
-		public override double getNextReactionsTime(int stateIdx, double time) {
+		public SimAlgRejection() : base() {
+			//No initialization needed (in the constructor, much initialization is needed elsewhere)
+		}
+
+		public override double getNextReactionTime(int stateIdx) {
 			return 0.0;
 		}
 
@@ -63,7 +67,7 @@ namespace CJSim {
 
 		}
 
-		public override void performReactions(int stateIdx, ref DiseaseState writeState, double time) {
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState writeState, double time) {
 			writeState.setTo(model.properties.readCells[stateIdx]);
 
 			//check if the populations are still in the bounds
