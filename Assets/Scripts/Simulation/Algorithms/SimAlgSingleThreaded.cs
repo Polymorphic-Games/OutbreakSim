@@ -17,6 +17,10 @@ namespace CJSim {
 		public override double getNextReactionsTime(int stateIdx, double time) {
 			return algorithm.getNextReactionsTime(stateIdx, time);
 		}
+		public override void performSingleReaction(int stateIdx, ref DiseaseState writeState) {
+			algorithm.performSingleReaction(stateIdx, ref writeState);
+		}
+		
 		public override void performReactions(int stateIdx, ref DiseaseState writeState, double time) {
 			algorithm.performReactions(stateIdx, ref writeState, time);
 		}

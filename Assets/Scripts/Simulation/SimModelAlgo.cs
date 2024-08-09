@@ -6,8 +6,11 @@ namespace CJSim {
 		//Not used by the deterministic model, but for many will return the next timestep to go to
 		//Pass the time parameter to request a specific time
 		public abstract double getNextReactionsTime(int stateIdx, double time);
-		//Perform reactions, if the model cares about the time you can include it here
+		//Perform reactions, if the model lets you specify the time it will go until it reaches that time as a maximum time to simulate
+		//If the model choosing timesteps itself it will not exceed the given time
 		public abstract void performReactions(int stateIdx, ref DiseaseState writeState, double time);
+		//Performs a single reaction, if the model allows for it
+		public abstract void performSingleReaction(int stateIdx, ref DiseaseState writeState);
 		//Does a full tick, the time parameter may or may not be used
 		public void fullTick(int stateIdx, ref DiseaseState writeState, double time) {
 			performReactions(stateIdx, ref writeState, getNextReactionsTime(stateIdx, time));
