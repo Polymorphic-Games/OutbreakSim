@@ -23,7 +23,7 @@ namespace CJSim {
 			//No initialization needed (in the constructor, much initialization is needed elsewhere)
 		}
 
-		public override double getNextReactionTime(int stateIdx) {
+		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
 			return 0.0;
 		}
 
@@ -63,12 +63,12 @@ namespace CJSim {
 			}
 		}
 
-		public override void performSingleReaction(int stateIdx, ref DiseaseState writeState) {
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
 
 		}
 
-		public override void performReactionsWithTime(int stateIdx, ref DiseaseState writeState, double time) {
-			writeState.setTo(model.properties.readCells[stateIdx]);
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
+			writeState.setTo(readState);
 
 			//check if the populations are still in the bounds
 			for (int q = 0; q < model.properties.compartmentCount; q++) {

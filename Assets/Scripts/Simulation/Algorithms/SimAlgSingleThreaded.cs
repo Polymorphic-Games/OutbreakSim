@@ -14,15 +14,15 @@ namespace CJSim {
 		}
 
 		//Pass these function to the real algorithm
-		public override double getNextReactionTime(int stateIdx) {
-			return algorithm.getNextReactionTime(stateIdx);
+		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
+			return algorithm.getNextReactionTime(stateIdx, ref readState);
 		}
-		public override void performSingleReaction(int stateIdx, ref DiseaseState writeState) {
-			algorithm.performSingleReaction(stateIdx, ref writeState);
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
+			algorithm.performSingleReaction(stateIdx, ref readState, ref writeState);
 		}
 		
-		public override void performReactionsWithTime(int stateIdx, ref DiseaseState writeState, double time) {
-			algorithm.performReactionsWithTime(stateIdx, ref writeState, time);
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
+			algorithm.performReactionsWithTime(stateIdx, ref readState, ref writeState, time);
 		}
 
 		public void updateAll() {
@@ -30,7 +30,7 @@ namespace CJSim {
 			double minTime = double.MaxValue;
 			int cellIdx = -1;
 			for (int q = 0; q < model.properties.cellCount; q++) {
-				double nextTime = algorithm.getNextReactionTime(q);
+				double nextTime = algorithm.getNextReactionTime(q, ref model.properties.readCells[q]);
 				if (minTime > nextTime) {
 					cellIdx = q;
 					minTime = nextTime;
@@ -41,7 +41,7 @@ namespace CJSim {
 				//Do the single reaction and update all the times in all the cells
 				for (int q = 0; q < model.properties.cellCount; q++) {
 					if (q == cellIdx) {
-						algorithm.performReactionsWithTime(q, ref model.properties.writeCells[q], minTime);
+						algorithm.performReactionsWithTime(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], minTime);
 					} else {
 						model.properties.writeCells[q].timeSimulated += minTime;
 					}

@@ -6,33 +6,35 @@ namespace CJSim {
 			timestep = step;
 		}
 
-		public override double getNextReactionTime(int stateIdx) {
+		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
 			return 0.0;
 		}
-		public override void performSingleReaction(int stateIdx, ref DiseaseState writeState) {
-			//Could just do one tick of the timestep that makes sense right
-			throw new System.NotImplementedException();
-		}
-
-		//Perform reactions, if the model cares about the time you can include it here
-		
-		
-		//Perform reactions, if the model cares about the time you can include it here
-		public override void performReactionsWithTime(int stateIdx, ref DiseaseState writeState, double time) {
-			writeState.setTo(model.properties.readCells[stateIdx]);
-			//Needs to go by timestep sry bb
-			throw new System.NotImplementedException();
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
+			writeState.setTo(readState);
 
 			for (int q = 0; q < model.properties.reactionCount; q++) {
 				//Calculate this propensity function value, also add .5 for rounding
 				double res = ((double)dispatchPropensityFunction(
-					ref model.properties.readCells[stateIdx], stateIdx, model.properties.reactionFunctionDetails[q]
-					) * time) + 0.5;
+					ref readState, stateIdx, model.properties.reactionFunctionDetails[q]
+					) * timestep) + 0.5;
 				writeState.state[model.properties.stoichiometry[q].Item2] += (int)res;
 				writeState.state[model.properties.stoichiometry[q].Item1] -= (int)res;
 			}
 
-			writeState.timeSimulated += time;
+			writeState.timeSimulated += timestep;
+		}
+
+		//Perform reactions, if the model cares about the time you can include it here
+		
+		
+		//Perform reactions, if the model cares about the time you can include it here
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
+			DiseaseState fakeRead = new DiseaseState(readState);
+			for (double q = time; q >= timestep; q-=timestep) {
+				performSingleReaction(stateIdx, ref fakeRead, ref writeState);
+				//cjnote there has to be a faster way to do this, avoid copying
+				fakeRead.setTo(writeState);
+			}
 		}
 	}
 }

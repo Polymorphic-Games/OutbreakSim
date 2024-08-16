@@ -183,7 +183,11 @@ namespace CJSim {
 					alg.updateAll();
 				} else {
 					for (int q = blockStart; q < blockEnd; q++) {
-						model.algorithm.fullTick(q, ref model.properties.writeCells[q], threadDT);
+						try {
+							model.algorithm.fullTick(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], threadDT);
+						} catch (System.Exception e) {
+							ThreadLogger.Log(e.Message + " " + e.StackTrace);
+						}
 					}
 				}
 

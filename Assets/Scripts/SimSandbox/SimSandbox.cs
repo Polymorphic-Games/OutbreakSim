@@ -27,7 +27,7 @@ public class SimSandbox : MonoBehaviour {
 		props.readCells[0].state[1] = 100;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgDeterministic(0.2);
+		SimModelAlgorithm algorithm = new SimAlgDeterministic(.2);
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 
@@ -58,7 +58,7 @@ public class SimSandbox : MonoBehaviour {
 		category3.Append(state.timeSimulated, state.state[2]);
 	}
 
-	double step = 0.3;
+	double step = .2;
 	double lastTime = 0.0f;
 	private void Update() {
 		//Press N to do 10 steps
