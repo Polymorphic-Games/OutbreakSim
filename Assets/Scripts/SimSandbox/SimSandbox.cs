@@ -2,7 +2,7 @@ using CJSim;
 using UnityEngine;
 using DataVisualizer;
 
-public class SimSandbox : MonoBehaviour {
+public class SimSandbox : SimSandboxBase {
 	public DataSeriesChart chart;
 
 	private Simulation simulation;
@@ -27,7 +27,7 @@ public class SimSandbox : MonoBehaviour {
 		props.readCells[0].state[1] = 100;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgDeterministic(.2);
+		SimModelAlgorithm algorithm = new SimAlgDeterministic(0.2);
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 
@@ -38,27 +38,7 @@ public class SimSandbox : MonoBehaviour {
 		initChart(chart);
 	}
 
-	private void initChart(DataSeriesChart chart) {
-		chart.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
-		chart.DataSource.GetCategory("infected").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
-		chart.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial = new Material(Shader.Find("DataVisualizer/Canvas/Solid"));
-
-		chart.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.white;
-		chart.DataSource.GetCategory("infected").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.red;
-		chart.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.green;
-	}
-
-	private void updateChart(DataSeriesChart chart, DiseaseState state) {
-		CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
-		CategoryDataHolder category2 = chart.DataSource.GetCategory("infected").Data; // obtain category data
-		CategoryDataHolder category3 = chart.DataSource.GetCategory("rec").Data; // obtain category data
-		
-		category.Append(state.timeSimulated, state.state[0]);
-		category2.Append(state.timeSimulated, state.state[1]);
-		category3.Append(state.timeSimulated, state.state[2]);
-	}
-
-	double step = .2;
+	double step = 0.3;
 	double lastTime = 0.0f;
 	private void Update() {
 		//Press N to do 10 steps
