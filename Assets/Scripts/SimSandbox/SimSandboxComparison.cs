@@ -40,10 +40,13 @@ public class SimSandboxComparison :  SimSandboxBase {
 		SimCore core1 = new SimCore(model, 1);
 		simulation1 = new Simulation(core1);
 		
-		simulation2 = new Simulation(new SimCore(new SimModel(props, new SimAlgGillespie(), movementModel), 1));
+		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgGillespie(), movementModel), 1));
 
 		initChart(chart1);
 		initChart(chart2);
+		chart2.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color -= new Color(0,0,0,0.5f);
+		chart2.DataSource.GetCategory("infected").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color -= new Color(0,0,0,0.5f);
+		chart2.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color -= new Color(0,0,0,0.5f);
 	}
 
 	private void Update() {
