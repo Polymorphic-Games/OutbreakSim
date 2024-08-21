@@ -29,18 +29,12 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 1000;
-		props.readCells[0].state[1] = 10;
+		props.readCells[0].state[0] = 10;
+		props.readCells[0].state[1] = 1;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgDeterministic(0.2);
-
-		SimModel model = new SimModel(props, algorithm, movementModel);
-
-		SimCore core1 = new SimCore(model, 1);
-		simulation1 = new Simulation(core1);
-		
-		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgGillespie(), movementModel), 1));
+		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(.2), movementModel), 1));
+		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(.001), movementModel), 1));
 
 		initChart(chart1);
 		initChart(chart2);

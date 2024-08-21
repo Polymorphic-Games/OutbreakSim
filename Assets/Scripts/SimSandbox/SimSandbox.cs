@@ -23,11 +23,11 @@ public class SimSandbox : SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 1000000;
-		props.readCells[0].state[1] = 100;
+		props.readCells[0].state[0] = 10;
+		props.readCells[0].state[1] = 1;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgDeterministic(0.2);
+		SimModelAlgorithm algorithm = new SimAlgGillespie();
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 

@@ -96,10 +96,10 @@ namespace CJSim {
 		}
 
 		//Returns the sum of all the propensity functions for this state
-		public double sumOfPropensityFunctions(int stateIdx) {
-			double res = 0.0f;
+		public double sumOfPropensityFunctions(int stateIdx, ref DiseaseState state) {
+			double res = 0.0;
 			for (int q = 0; q < model.properties.reactionCount; q++) {
-				double propFunc = dispatchPropensityFunction(ref model.properties.readCells[stateIdx], stateIdx, model.properties.reactionFunctionDetails[q]);
+				double propFunc = dispatchPropensityFunction(ref state, stateIdx, model.properties.reactionFunctionDetails[q]);
 				res += propFunc;
 			}
 			return res;

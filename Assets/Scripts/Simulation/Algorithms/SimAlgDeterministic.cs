@@ -16,9 +16,9 @@ namespace CJSim {
 				//Calculate this propensity function value, also add .5 for rounding
 				double res = ((double)dispatchPropensityFunction(
 					ref readState, stateIdx, model.properties.reactionFunctionDetails[q]
-					) * timestep) + 0.5;
-				writeState.state[model.properties.stoichiometry[q].Item2] += (int)res;
-				writeState.state[model.properties.stoichiometry[q].Item1] -= (int)res;
+					) * timestep);
+				writeState.state[model.properties.stoichiometry[q].Item2] += res;
+				writeState.state[model.properties.stoichiometry[q].Item1] -= res;
 			}
 
 			writeState.timeSimulated += timestep;

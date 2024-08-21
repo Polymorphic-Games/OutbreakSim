@@ -4,25 +4,25 @@
 
 namespace CJSim {
 	public struct DiseaseState {
-		public readonly int[] state;
+		public readonly double[] state;
 		public double timeSimulated;
 
 		//The main constrcutor, requires the state (compartment) count
 		public DiseaseState(int stateCount) {
-			state = new int[stateCount];
+			state = new double[stateCount];
 			timeSimulated = 0.0;
 			setToZero();
 		}
 
 		//Allow for indexing this struct directly
-		public int this[int index] {
+		public double this[int index] {
 			get {return state[index];}
 			set {state[index] = value;}
 		}
 
 		//Copy constructor, this struct contains a reference type that needs to be explicitly copied
 		public DiseaseState(DiseaseState other) {
-			state = new int[other.stateCount];
+			state = new double[other.stateCount];
 			timeSimulated = other.timeSimulated;
 			for (int q = 0; q< other.stateCount; q++) {
 				state[q] = other.state[q];
@@ -41,9 +41,9 @@ namespace CJSim {
 		}
 
 		//Calculates the sum of all the compartments
-		public int numberOfPeople {
+		public double numberOfPeople {
 			get {
-				int ret = 0;
+				double ret = 0;
 				for (int q = 0; q < stateCount; q++) {
 					ret += state[q];
 				}
