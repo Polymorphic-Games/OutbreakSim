@@ -6,7 +6,17 @@ using System;
 namespace CJSim {
 	public class SimModel {
 		public SimModelProperties properties;
-		public SimModelAlgorithm algorithm;
+
+		private SimModelAlgorithm _algorithm;
+		public SimModelAlgorithm algorithm {
+			get {
+				return _algorithm;
+			}
+			set {
+				_algorithm = value;
+				value.onModelCreate(this);
+			}
+		}
 		public IMovementModel movementModel;
 		
 		//Build a model from the various components
@@ -14,8 +24,6 @@ namespace CJSim {
 			this.properties = properties;
 			this.movementModel = movement;
 			this.algorithm = algorithm;
-			
-			algorithm.onModelCreate(this);
 		}
 
 

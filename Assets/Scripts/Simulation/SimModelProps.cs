@@ -42,6 +42,44 @@ namespace CJSim {
 			initCells(cellCount);
 		}
 
+		//Makes a copy of the other SimModelProperties
+		public SimModelProperties(SimModelProperties other) {
+			//I'm relatively certain this function will not ever need to be performance critical
+			//So I just did things in a way in which I was 100% things were copied properly
+			stoichiometry = new Tuple<int, int>[other.reactionCount];
+			reactionFunctionDetails = new int[other.reactionCount][];
+			compartmentCount = other.compartmentCount;
+			parameters = new double[other.parameterCount];
+
+			//Do reactionFunctionDetails
+			for (int q = 0; q < other.reactionCount; q++) {
+				//Do rfd's
+				reactionFunctionDetails[q] = new int[other.reactionFunctionDetails[q].Length];
+				for (int rfd = 0; rfd < other.reactionFunctionDetails[q].Length; rfd++) {
+					reactionFunctionDetails[q][rfd] = other.reactionFunctionDetails[q][rfd];
+				}
+
+				//Also do stoich
+				stoichiometry[q] = new System.Tuple<int, int>(other.stoichiometry[q].Item1, other.stoichiometry[q].Item2);
+			}
+
+			//Parameters
+			for (int q = 0; q < other.parameterCount; q++) {
+				parameters[q] = other.parameters[q];
+			}
+
+			//Cells
+			//initCells takes care of making empty disease states of the right size
+			//and allocating the read/write arrays
+			initCells(other.cellCount);
+			for (int q = 0; q < other.cellCount; q++) {
+				for (int comp = 0; comp < other.compartmentCount; comp++) {
+					readCells[q][comp] = other.readCells[q][comp];
+					writeCells[q][comp] = other.writeCells[q][comp];
+				}
+			}
+		}
+
 		//Gets the highest order of reaction for this compartment
 		//cjnote should be easy to cache this somewhere, it's also only used for tau leaping tho so not much need to bother
 		public int getHOR(int compartment) {

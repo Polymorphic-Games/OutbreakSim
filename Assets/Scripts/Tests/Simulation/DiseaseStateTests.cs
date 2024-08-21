@@ -36,6 +36,7 @@ public class DiseaseStateTests {
 		copiedState[3] = 100;
 		//Make sure it doesn't edit the original
 		Assert.AreEqual(3, goodState[3]);
+		Assert.AreNotEqual(goodState[3], copiedState[3]);
 	}
 
 

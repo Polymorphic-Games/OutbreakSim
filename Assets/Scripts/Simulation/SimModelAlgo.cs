@@ -25,7 +25,6 @@ namespace CJSim {
 				fakeRead.setTo(writeState);
 				reactionsDone++;
 			}
-			ThreadLogger.Log("Did " + reactionsDone + " reactions");
 		}
 		//Does a full tick with time, this is what the threads usually call
 		public void fullTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
