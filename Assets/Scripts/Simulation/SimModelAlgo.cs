@@ -16,10 +16,10 @@ namespace CJSim {
 		//If the model choosing timesteps itself it will not exceed the given time
 		public virtual void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
 			DiseaseState fakeRead = new DiseaseState(readState);
-			double maxTime = fakeRead.timeSimulated + time;
 			//Could go over the time but whatever
 			int reactionsDone = 0;
-			while (writeState.timeSimulated < maxTime) {
+			writeState.setTo(fakeRead);
+			while (writeState.timeSimulated < time) {
 				performSingleReaction(stateIdx, ref fakeRead, ref writeState);
 				//cjnote there has to be a faster way to do this, avoid copying
 				fakeRead.setTo(writeState);

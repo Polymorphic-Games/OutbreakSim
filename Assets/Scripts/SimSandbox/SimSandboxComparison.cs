@@ -33,8 +33,8 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.readCells[0].state[1] = 1;
 		props.readCells[0].state[2] = 0;
 
-		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(.2), movementModel), 1));
-		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(.001), movementModel), 1));
+		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(step), movementModel), 1));
+		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgGillespie(), movementModel), 1));
 
 		initChart(chart1);
 		initChart(chart2);
@@ -43,16 +43,34 @@ public class SimSandboxComparison :  SimSandboxBase {
 		chart2.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color -= new Color(0,0,0,0.5f);
 	}
 
+	protected override void initChart(DataSeriesChart chart) {
+		base.initChart(chart);
+		chart.AxisView.AutomaticHorizontalView = false;
+		chart.AxisView.HorizontalViewOrigin = 0;
+	}
+
+
+	protected override void updateChart(DataSeriesChart chart, DiseaseState state) {
+		base.updateChart(chart, state);
+		chart.AxisView.HorizontalViewSize = maxTimeForGraph;
+	}
+
+	double time = 0.0;
+	double step = .01;
+	double maxTimeForGraph = .2;
 	private void Update() {
 		//Press N to do 10 steps
-		if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.N)) {
+		if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.N) || true) {
 			for (int q = 0; q < (Input.GetKeyDown(KeyCode.N) ? 10 : 1); q++) {
-
+				time += step;
+				maxTimeForGraph = System.Math.Max(simulation2.model.properties.readCells[0].timeSimulated, simulation1.model.properties.readCells[0].timeSimulated);
 				updateChart(chart1, simulation1.model.properties.readCells[0]);
 				updateChart(chart2, simulation2.model.properties.readCells[0]);
-
-				simulation1.core.tickSimulation(.2);
-				simulation2.core.tickSimulation(.2);
+				Debug.Log("1 time is " + simulation1.model.properties.readCells[0].timeSimulated);
+				Debug.Log("2 time is " + simulation2.model.properties.readCells[0].timeSimulated);
+				Debug.Log("requested time is " + time);
+				simulation1.core.tickSimulation(time);
+				simulation2.core.tickSimulation(time);
 			}
 		}
 	}
