@@ -53,6 +53,7 @@ namespace CJSim {
 					//Only check stoichiometry. cjnote might not work if we added a reaction that depended on some other number
 					//Which there is already technically one that depends on the number of people in a cell, but if we never change the number of people in a cell we'll be good
 					//Or maybe could add number of people to things that we check and regen the propensities if need be, but that sounds like a lot of work that I don't want to do right now
+					//Not to mention the spatial propensity function
 					if (model.properties.stoichiometry[reactionId].Item1 == q || model.properties.stoichiometry[reactionId].Item2 == q) {
 						currentReactions.Add(reactionId);
 					}
@@ -64,10 +65,6 @@ namespace CJSim {
 		}
 
 		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
-
-		}
-
-		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
 			writeState.setTo(readState);
 
 			//check if the populations are still in the bounds
@@ -100,9 +97,9 @@ namespace CJSim {
 				bool accepted = false;
 			} while(true);
 			//Should be U(0,1) cjnote
-			double r1 = ThreadSafeRandom.NextDouble();
-			double r2 = ThreadSafeRandom.NextDouble();
-			double r3 = ThreadSafeRandom.NextDouble();
+			double r1 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+			double r2 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+			double r3 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
 		}
 	}
 

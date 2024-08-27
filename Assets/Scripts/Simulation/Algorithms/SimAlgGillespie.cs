@@ -10,14 +10,14 @@ namespace CJSim {
 
 		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState);
-			return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextDouble()));
+			return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive()));
 		}
 		//Perform reactions, if the model cares about the time you can include it here
 		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
 			writeState.setTo(readState);
 			//Pick and do a reaction
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState);
-			double sumPropsR2 = sumProps * ThreadSafeRandom.NextDouble();
+			double sumPropsR2 = sumProps * ThreadSafeRandom.NextUniform0Inclusive1Inclusive();
 			double sum = 0.0;
 			for (int q = 0; q < model.properties.reactionCount; q++) {
 				double currProp = dispatchPropensityFunction(ref readState, stateIdx, model.properties.reactionFunctionDetails[q]);

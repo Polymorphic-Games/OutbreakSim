@@ -16,10 +16,22 @@ namespace CJSim {
 			}
 		}
 
-		public static double NextDouble() {
-			checkLocal();
-			//cjnote this would be a really good spot to fix the returning 0 issue
+		private const double doubleMaxInt = (double)int.MaxValue;
+
+		public static double NextUniform0Exclusive1Exclusive() {
+			double rawNum = _local.Next();
+			return (rawNum + 1) / (doubleMaxInt + 1);
+		}
+		public static double NextUniform0Inclusive1Exclusive() {
 			return _local.NextDouble();
+		}
+		public static double NextUniform0Exclusive1Inclusive() {
+			double rawNum = _local.Next();
+			return (rawNum + 1) / (doubleMaxInt);
+		}
+		public static double NextUniform0Inclusive1Inclusive() {
+			double rawNum = _local.Next();
+			return (rawNum) / (doubleMaxInt - 1);
 		}
 	}
 }
