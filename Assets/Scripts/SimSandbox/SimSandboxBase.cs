@@ -16,6 +16,10 @@ public abstract class SimSandboxBase : MonoBehaviour {
 	}
 
 	protected virtual void updateChart(DataSeriesChart chart, DiseaseState state) {
+		if (double.IsInfinity(state.timeSimulated)) {
+			return;
+		}
+		
 		CategoryDataHolder category = chart.DataSource.GetCategory("susceptible").Data; // obtain category data
 		CategoryDataHolder category2 = chart.DataSource.GetCategory("infected").Data; // obtain category data
 		CategoryDataHolder category3 = chart.DataSource.GetCategory("rec").Data; // obtain category data

@@ -29,8 +29,8 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 10;
-		props.readCells[0].state[1] = 1;
+		props.readCells[0].state[0] = 30;
+		props.readCells[0].state[1] = 5;
 		props.readCells[0].state[2] = 0;
 
 		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(step), movementModel), 1));
@@ -47,28 +47,36 @@ public class SimSandboxComparison :  SimSandboxBase {
 		base.initChart(chart);
 		chart.AxisView.AutomaticHorizontalView = false;
 		chart.AxisView.HorizontalViewOrigin = 0;
+		chart.AxisView.AutomaticVerticallView = false;
+		chart.AxisView.VerticalViewOrigin = 0;
 	}
 
 
 	protected override void updateChart(DataSeriesChart chart, DiseaseState state) {
 		base.updateChart(chart, state);
 		chart.AxisView.HorizontalViewSize = maxTimeForGraph;
+		chart.AxisView.VerticalViewSize = state.numberOfPeople;
 	}
 
 	double time = 0.0;
-	double step = .01;
+	double step = .015;
 	double maxTimeForGraph = .2;
+	bool doAnimation = true;
 	private void Update() {
 		//Press N to do 10 steps
-		if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.N) || true) {
+		if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.N) || doAnimation) {
 			for (int q = 0; q < (Input.GetKeyDown(KeyCode.N) ? 10 : 1); q++) {
 				time += step;
+
+				double oldMaxTime = maxTimeForGraph;
 				maxTimeForGraph = System.Math.Max(simulation2.model.properties.readCells[0].timeSimulated, simulation1.model.properties.readCells[0].timeSimulated);
+				if (double.IsInfinity(maxTimeForGraph)) {
+					maxTimeForGraph = System.Math.Min(simulation2.model.properties.readCells[0].timeSimulated, simulation1.model.properties.readCells[0].timeSimulated);
+				}
+
 				updateChart(chart1, simulation1.model.properties.readCells[0]);
 				updateChart(chart2, simulation2.model.properties.readCells[0]);
-				Debug.Log("1 time is " + simulation1.model.properties.readCells[0].timeSimulated);
-				Debug.Log("2 time is " + simulation2.model.properties.readCells[0].timeSimulated);
-				Debug.Log("requested time is " + time);
+
 				simulation1.core.tickSimulation(time);
 				simulation2.core.tickSimulation(time);
 			}

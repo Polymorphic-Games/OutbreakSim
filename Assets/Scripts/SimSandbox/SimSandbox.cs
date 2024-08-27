@@ -39,6 +39,7 @@ public class SimSandbox : SimSandboxBase {
 	}
 
 	double step = 0.3;
+	double time = 0.0;
 	double lastTime = 0.0f;
 	private void Update() {
 		//Press N to do 10 steps
@@ -52,7 +53,8 @@ public class SimSandbox : SimSandboxBase {
 				updateChart(chart, simulation.model.properties.readCells[0]);
 				
 				lastTime = simulation.model.properties.readCells[0].timeSimulated;
-				simulation.core.tickSimulation(step);
+				time += step;
+				simulation.core.tickSimulation(time);
 				dumpSim();
 			}
 		}
