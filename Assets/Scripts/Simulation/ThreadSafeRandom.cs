@@ -19,17 +19,21 @@ namespace CJSim {
 		private const double doubleMaxInt = (double)int.MaxValue;
 
 		public static double NextUniform0Exclusive1Exclusive() {
+			checkLocal();
 			double rawNum = _local.Next();
 			return (rawNum + 1) / (doubleMaxInt + 1);
 		}
 		public static double NextUniform0Inclusive1Exclusive() {
+			checkLocal();
 			return _local.NextDouble();
 		}
 		public static double NextUniform0Exclusive1Inclusive() {
+			checkLocal();
 			double rawNum = _local.Next();
 			return (rawNum + 1) / (doubleMaxInt);
 		}
 		public static double NextUniform0Inclusive1Inclusive() {
+			checkLocal();
 			double rawNum = _local.Next();
 			return (rawNum) / (doubleMaxInt - 1);
 		}
