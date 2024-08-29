@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 
+//Based on https://doi.org/10.1063/1.4896985
 namespace CJSim {
 	//Data for the model
 	public struct SimAlgRejectionCellData {
@@ -10,6 +11,8 @@ namespace CJSim {
 		//Computed propensities for each 
 		public double[] propensityMins;
 		public double[] propensityMaxs;
+
+		public double propensitySumMax;
 	}
 
 	public class SimAlgRejection : SimModelAlgorithm {
@@ -18,6 +21,8 @@ namespace CJSim {
 
 		//Which compartments are associated with which reactions
 		int[][] speciesReactionDependency;
+
+		public double rangePercentage = .15;
 
 		public SimAlgRejection() : base() {
 			//No initialization needed (in the constructor, much initialization is needed elsewhere)
@@ -72,8 +77,8 @@ namespace CJSim {
 				//WriteState is currently equivalent to read state so we're good to read from it right now
 				if (writeState[q] < cellData[stateIdx].stateMins[q] || writeState[q] > cellData[stateIdx].stateMaxs[q]) {
 					//Regenerate the bounds
-					cellData[stateIdx].stateMins[q] = (int)((0.85 * (double)writeState[q]) + 0.5);
-					cellData[stateIdx].stateMaxs[q] = (int)((1.15 * (double)writeState[q]) + 0.5);
+					cellData[stateIdx].stateMins[q] = (1-rangePercentage) * writeState[q];
+					cellData[stateIdx].stateMaxs[q] = (1+rangePercentage) * writeState[q];
 
 					//Regen the propensities
 					//not the fastest way to do this because if 2 species both need updates and both are in the same reaction
@@ -84,22 +89,48 @@ namespace CJSim {
 						cellData[stateIdx].propensityMins[reactionID] = dispatchPropensityFunction(ref cellData[stateIdx].stateMins, stateIdx, model.properties.reactionFunctionDetails[reactionID]);
 					}
 				}
-			}
-
-			//Compute total propensity upper bound
-			double sumPropsMax = 0.0;
-			foreach (double propMax in cellData[stateIdx].propensityMaxs) {
-				sumPropsMax += propMax;
+				//Compute total propensity upper bound cjnote not sure if this should go inside the if or not
+				//Also not sure about the whole system, feels like we could recalculate less often
+				double sumPropsMax = 0.0;
+				foreach (double propMax in cellData[stateIdx].propensityMaxs) {
+					sumPropsMax += propMax;
+				}
+				cellData[stateIdx].propensitySumMax = sumPropsMax;
 			}
 
 			do {
-				int u = 0;
+				double u = 1;
 				bool accepted = false;
+
+				do {
+					double r1 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+					double r2 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+					double r3 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+
+					//Select minimum uMicro
+					double umicroSelectionSum = 0.0;
+					int uMicro = 0;
+					double r1a0Max = r1 * cellData[stateIdx].propensitySumMax;
+					for (int q = 0; q < model.properties.reactionCount; q++) {
+						umicroSelectionSum += cellData[stateIdx].propensityMaxs[q];
+						if (umicroSelectionSum > r1a0Max) {
+							uMicro = q + 1;
+							break;
+						}
+					}
+
+					if (r2 <= (cellData[stateIdx].propensityMins[uMicro] / cellData[stateIdx].propensityMaxs[uMicro])) {
+						accepted = true;
+					} else {
+						double auMicro = dispatchPropensityFunction(ref readState, stateIdx, model.properties.reactionFunctionDetails[uMicro]);
+						if (r2 <= (auMicro / cellData[stateIdx].propensityMaxs[uMicro])) {
+							accepted = true;
+						}
+					}
+					u = u * r3;
+				} while (accepted);
 			} while(true);
-			//Should be U(0,1) cjnote
-			double r1 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
-			double r2 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
-			double r3 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
+
 		}
 	}
 

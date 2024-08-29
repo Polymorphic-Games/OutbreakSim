@@ -27,7 +27,7 @@ public class SimSandbox : SimSandboxBase {
 		props.readCells[0].state[1] = 1;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgGillespie();
+		SimModelAlgorithm algorithm = new SimAlgRejection();
 
 		SimModel model = new SimModel(props, algorithm, movementModel);
 
