@@ -29,11 +29,11 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 30;
-		props.readCells[0].state[1] = 5;
+		props.readCells[0].state[0] = 1000;
+		props.readCells[0].state[1] = 20;
 		props.readCells[0].state[2] = 0;
 
-		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgDeterministic(step), movementModel), 1));
+		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgRejection(), movementModel), 1));
 		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgGillespie(), movementModel), 1));
 
 		initChart(chart1);
@@ -59,9 +59,9 @@ public class SimSandboxComparison :  SimSandboxBase {
 	}
 
 	double time = 0.0;
-	double step = .015;
+	double step = .5;
 	double maxTimeForGraph = .2;
-	bool doAnimation = true;
+	bool doAnimation = false;
 	private void Update() {
 		//Press N to do 10 steps
 		if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.N) || doAnimation) {
