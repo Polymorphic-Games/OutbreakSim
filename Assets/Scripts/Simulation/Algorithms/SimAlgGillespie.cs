@@ -24,8 +24,7 @@ namespace CJSim {
 				sum += currProp;
 				if (sum >= sumPropsR2) {
 					//This is the reaction we do
-					writeState.state[model.properties.stoichiometry[q].Item1] -= 1;
-					writeState.state[model.properties.stoichiometry[q].Item2] += 1;
+					updateStateViaStoichOneReaction(ref writeState, q);
 					double step = getNextReactionTime(stateIdx, ref readState);
 					writeState.timeSimulated += step;
 					return;

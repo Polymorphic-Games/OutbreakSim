@@ -69,16 +69,22 @@ namespace CJSim {
 			}
 		}
 
+		//Because of how this model works performing a single reaction is a fair amount slower than running at speed
 		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
-			writeState.setTo(readState);
+			performReactionsWithTime(stateIdx, ref readState, ref writeState, 0.0);
+		}
 
+		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
+			ThreadLogger.Log("Start of simAlgRejection");
 			//check if the populations are still in the bounds
 			for (int q = 0; q < model.properties.compartmentCount; q++) {
-				//WriteState is currently equivalent to read state so we're good to read from it right now
-				if (writeState[q] < cellData[stateIdx].stateMins[q] || writeState[q] > cellData[stateIdx].stateMaxs[q]) {
-					//Regenerate the bounds
-					cellData[stateIdx].stateMins[q] = (1-rangePercentage) * writeState[q];
-					cellData[stateIdx].stateMaxs[q] = (1+rangePercentage) * writeState[q];
+				//If out of bounds
+				if (readState[q] < cellData[stateIdx].stateMins[q] || readState[q] > cellData[stateIdx].stateMaxs[q]) {
+					//Regenerate the bounds, with rounding because the populations will only be integers for this model
+					cellData[stateIdx].stateMins[q] = (int)(((1-rangePercentage) * readState[q]) + .5);
+					cellData[stateIdx].stateMaxs[q] = (int)(((1+rangePercentage) * readState[q]) + .5);
+					//Don't let min go to 0
+					cellData[stateIdx].stateMins[q] = (cellData[stateIdx].stateMins[q] >= 0 ? cellData[stateIdx].stateMins[q] : 0);
 
 					//Regen the propensities
 					//not the fastest way to do this because if 2 species both need updates and both are in the same reaction
@@ -97,11 +103,18 @@ namespace CJSim {
 				}
 				cellData[stateIdx].propensitySumMax = sumPropsMax;
 			}
-
+			ThreadLogger.Log("Did the first for loop");
+			//Get recomputed so default value doesn't matter
+			bool isContainedInStateBounds = false;
+			DiseaseState fakeRead = new DiseaseState(readState);
 			do {
 				double u = 1;
+				int uMicro = 0;
 				bool accepted = false;
 
+				writeState.setTo(fakeRead);
+
+				ThreadLogger.Log("About to start 2nd do");
 				do {
 					double r1 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
 					double r2 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
@@ -109,29 +122,49 @@ namespace CJSim {
 
 					//Select minimum uMicro
 					double umicroSelectionSum = 0.0;
-					int uMicro = 0;
 					double r1a0Max = r1 * cellData[stateIdx].propensitySumMax;
 					for (int q = 0; q < model.properties.reactionCount; q++) {
 						umicroSelectionSum += cellData[stateIdx].propensityMaxs[q];
 						if (umicroSelectionSum > r1a0Max) {
-							uMicro = q + 1;
+							uMicro = q;
 							break;
 						}
 					}
-
+					ThreadLogger.Log("Selected uMicro");
+					ThreadLogger.Log("prop min is " + cellData[stateIdx].propensityMins[uMicro] + " and max is " + cellData[stateIdx].propensityMaxs[uMicro]);
+					ThreadLogger.Log("r2 is " + r2 + ", first comp is " + (cellData[stateIdx].propensityMins[uMicro] / cellData[stateIdx].propensityMaxs[uMicro]) + " second is maybe reported later");
+					if (cellData[stateIdx].propensityMaxs[uMicro] == 0) return;
+					
 					if (r2 <= (cellData[stateIdx].propensityMins[uMicro] / cellData[stateIdx].propensityMaxs[uMicro])) {
 						accepted = true;
 					} else {
-						double auMicro = dispatchPropensityFunction(ref readState, stateIdx, model.properties.reactionFunctionDetails[uMicro]);
+						double auMicro = dispatchPropensityFunction(ref fakeRead, stateIdx, model.properties.reactionFunctionDetails[uMicro]);
+						ThreadLogger.Log("Second is " + (auMicro / cellData[stateIdx].propensityMaxs[uMicro]) + " :3");
 						if (r2 <= (auMicro / cellData[stateIdx].propensityMaxs[uMicro])) {
 							accepted = true;
 						}
 					}
 					u = u * r3;
-				} while (accepted);
-			} while(true);
+					ThreadLogger.Log("Did the weird if statement thingy " + accepted.ToString());
 
+				} while (!accepted);
+				//Compute firing time
+				double tau = (-1 / cellData[stateIdx].propensitySumMax) * Math.Log(u);
+				writeState.timeSimulated += tau;
+				updateStateViaStoichOneReaction(ref writeState, uMicro);
+
+				isContainedInStateBounds = true;
+				for (int q = 0; q < writeState.state.Length; q++) {
+					if (writeState[q] < cellData[stateIdx].stateMins[q] || writeState[q] > cellData[stateIdx].stateMaxs[q]) {
+						isContainedInStateBounds = false;
+						break;
+					}
+				}
+				fakeRead.setTo(writeState);
+
+			} while(isContainedInStateBounds && writeState.timeSimulated < time);
 		}
+	
 	}
 
 

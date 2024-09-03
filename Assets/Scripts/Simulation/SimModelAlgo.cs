@@ -109,5 +109,11 @@ namespace CJSim {
 		private double getParam(int idx) {
 			return model.properties.parameters[idx];
 		}
+
+		protected void updateStateViaStoichOneReaction(ref DiseaseState writeState, int reaction) {
+			ThreadLogger.Log("Adjusting state for reaction " + reaction);
+			writeState.state[model.properties.stoichiometry[reaction].Item1] -= 1;
+			writeState.state[model.properties.stoichiometry[reaction].Item2] += 1;
+		}
 	}
 }
