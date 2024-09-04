@@ -118,13 +118,11 @@ namespace CJSim {
 				writeState.setTo(fakeRead);
 
 				do {
-					double r1 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
 					double r2 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
-					double r3 = ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
 
 					//Select minimum uMicro
 					double umicroSelectionSum = 0.0;
-					double r1a0Max = r1 * cellData[stateIdx].propensitySumMax;
+					double r1a0Max = ThreadSafeRandom.NextUniform0Exclusive1Exclusive() * cellData[stateIdx].propensitySumMax;
 					for (int q = 0; q < model.properties.reactionCount; q++) {
 						umicroSelectionSum += cellData[stateIdx].propensityMaxs[q];
 						if (umicroSelectionSum > r1a0Max) {
@@ -132,7 +130,8 @@ namespace CJSim {
 							break;
 						}
 					}
-					if (cellData[stateIdx].propensityMaxs[uMicro] == 0) return;
+					//Quit doing stuff if our sum propensities are 0
+					if (cellData[stateIdx].propensitySumMax == 0) return;
 
 					if (r2 <= (cellData[stateIdx].propensityMins[uMicro] / cellData[stateIdx].propensityMaxs[uMicro])) {
 						accepted = true;
@@ -142,7 +141,7 @@ namespace CJSim {
 							accepted = true;
 						}
 					}
-					u = u * r3;
+					u = u * ThreadSafeRandom.NextUniform0Exclusive1Exclusive();
 
 				} while (!accepted);
 				//Compute firing time

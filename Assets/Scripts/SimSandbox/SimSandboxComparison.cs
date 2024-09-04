@@ -29,8 +29,8 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 1000;
-		props.readCells[0].state[1] = 20;
+		props.readCells[0].state[0] = 50;
+		props.readCells[0].state[1] = 5;
 		props.readCells[0].state[2] = 0;
 
 		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgRejection(), movementModel), 1));
@@ -81,5 +81,30 @@ public class SimSandboxComparison :  SimSandboxBase {
 				simulation2.core.tickSimulation(time);
 			}
 		}
+
+		if (Input.GetKeyDown(KeyCode.T)) {
+			doTimedRun(simulation1);
+			Debug.Log("Top is sim 1, bottom is sim 2");
+			doTimedRun(simulation2);
+			Debug.Log("And here is sim 1 again just for good measure");
+			doTimedRun(simulation1);
+		}
+	}
+
+
+	private void doTimedRun(Simulation simulation) {
+		SimModelProperties originalState = new SimModelProperties(simulation.model.properties);
+		System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+		
+		int runsToDo = 2000;
+		stopwatch.Start();
+		for (int q = 0; q < runsToDo; q++) {
+			simulation.core.tickSimulation(1e6);
+			//Because this will be here for eveyr simulation no matter what the amount of time it takes should be unimportant
+			simulation.model.properties = new SimModelProperties(originalState);
+		}
+		stopwatch.Stop();
+
+		Debug.Log("Ran " + runsToDo + " simulations in " + stopwatch.ElapsedMilliseconds + "ms which is " + (stopwatch.ElapsedMilliseconds / (double)runsToDo) + "ms per run");
 	}
 }

@@ -25,7 +25,9 @@ namespace CJSim {
 				if (sum >= sumPropsR2) {
 					//This is the reaction we do
 					updateStateViaStoichOneReaction(ref writeState, q);
-					double step = getNextReactionTime(stateIdx, ref readState);
+					//Don't call getNextReactionTime here because that function recalculates propensity sums again
+					//Which actually costs us like a > 20% performance hit
+					double step = ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive()));
 					writeState.timeSimulated += step;
 					return;
 				}
