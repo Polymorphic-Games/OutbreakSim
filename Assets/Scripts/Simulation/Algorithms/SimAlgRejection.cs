@@ -70,7 +70,7 @@ namespace CJSim {
 		}
 
 		//Because of how this model works performing a single reaction is a fair amount slower than running at speed
-		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double timestep = 0.0) {
 			performReactionsWithTime(stateIdx, ref readState, ref writeState, 0.0);
 		}
 

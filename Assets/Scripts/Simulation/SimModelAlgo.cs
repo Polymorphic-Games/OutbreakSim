@@ -3,12 +3,11 @@ namespace CJSim {
 	public abstract class SimModelAlgorithm {
 		// Abstract Public Functions \\
 
-		//Not used by the deterministic model, but for many will return the next timestep to go to
-		//Pass the time parameter to request a specific time
+		//Gets the next timestep for a reaction
 		public abstract double getNextReactionTime(int stateIdx, ref DiseaseState readState);
 		//Performs a single reaction, or whatever the model defines that to be
 		//Deterministic runs a step, tau leaping runs a step, etc.
-		public abstract void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState);
+		public abstract void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double timestep = 0.0);
 
 		//Max time related algorithm functions
 
@@ -25,10 +24,6 @@ namespace CJSim {
 				fakeRead.setTo(writeState);
 				reactionsDone++;
 			}
-		}
-		//Does a full tick with time, this is what the threads usually call
-		public void fullTick(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
-			performReactionsWithTime(stateIdx, ref readState, ref writeState, time);
 		}
 
 		public SimModel model { get; private set; }

@@ -76,6 +76,7 @@ crashlytics-build.properties
 .vscode/
 .vsconfig
 .DS_Store
+.editorconfig
 
 # Paid assets we are not allowed to distribute publicly (i.e on a public github repo)
 Assets/Bitsplash/

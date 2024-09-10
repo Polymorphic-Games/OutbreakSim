@@ -9,7 +9,7 @@ namespace CJSim {
 		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
 			return 0.0;
 		}
-		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double _ = 0.0) {
 			writeState.setTo(readState);
 
 			for (int q = 0; q < model.properties.reactionCount; q++) {

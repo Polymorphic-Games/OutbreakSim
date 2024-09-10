@@ -13,7 +13,7 @@ namespace CJSim {
 			return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive()));
 		}
 		//Perform reactions, if the model cares about the time you can include it here
-		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double timestep = 0.0) {
 			writeState.setTo(readState);
 			//Pick and do a reaction
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState);
@@ -27,7 +27,7 @@ namespace CJSim {
 					updateStateViaStoichOneReaction(ref writeState, q);
 					//Don't call getNextReactionTime here because that function recalculates propensity sums again
 					//Which actually costs us like a > 20% performance hit
-					double step = ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive()));
+					double step = timestep == 0.0 ? ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive())) : timestep;
 					writeState.timeSimulated += step;
 					return;
 				}

@@ -184,7 +184,7 @@ namespace CJSim {
 				} else {
 					for (int q = blockStart; q < blockEnd; q++) {
 						try {
-							model.algorithm.fullTick(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], threadDT);
+							model.algorithm.performReactionsWithTime(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], threadDT);
 						} catch (System.Exception e) {
 							ThreadLogger.Log(e.Message + " " + e.StackTrace);
 						}

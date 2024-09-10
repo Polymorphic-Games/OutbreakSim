@@ -17,8 +17,8 @@ namespace CJSim {
 		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
 			return algorithm.getNextReactionTime(stateIdx, ref readState);
 		}
-		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState) {
-			algorithm.performSingleReaction(stateIdx, ref readState, ref writeState);
+		public override void performSingleReaction(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double timestep = 0.0) {
+			algorithm.performSingleReaction(stateIdx, ref readState, ref writeState, timestep);
 		}
 		
 		public override void performReactionsWithTime(int stateIdx, ref DiseaseState readState, ref DiseaseState writeState, double time) {
@@ -41,8 +41,10 @@ namespace CJSim {
 				//Do the single reaction and update all the times in all the cells
 				for (int q = 0; q < model.properties.cellCount; q++) {
 					if (q == cellIdx) {
-						algorithm.performReactionsWithTime(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], minTime);
+						//If this is the lucky cell that gets the reaction, do it
+						algorithm.performSingleReaction(q, ref model.properties.readCells[q], ref model.properties.writeCells[q], minTime);
 					} else {
+						//Otherwise just add timeSimulated to the other cells
 						model.properties.writeCells[q].timeSimulated += minTime;
 					}
 				}
