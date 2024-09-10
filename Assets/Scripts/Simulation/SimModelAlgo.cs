@@ -26,19 +26,17 @@ namespace CJSim {
 			}
 		}
 
-		public SimModel model { get; private set; }
-		protected SimModelAlgorithm() {
+		public SimModelProperties properties { get; set; }
+		public SimMovementModel movementModel { get; set; }
+		protected SimModelAlgorithm(SimModelProperties modelProps, SimMovementModel movement) {
 			//I suppose this could be a list...
 			reactionFuncTypes = new ReactionFunctionTypes[propensityFunctionTypeCount];
 			reactionFuncTypes[0] = propensityFunction0;
 			reactionFuncTypes[1] = propensityFunction1;
 			reactionFuncTypes[2] = propensityFunction2;
-		}
 
-		//Please call this when we assemble a SimModel, algos needs to know a lot of stuff
-		//Couldn't figure out a different way of doing this what can I say
-		public virtual void onModelCreate(SimModel model) {
-			this.model = model;
+			properties = modelProps;
+			movementModel = movement;
 		}
 
 		// Propensity Functions \\
@@ -53,26 +51,29 @@ namespace CJSim {
 		//(param * state)
 		//(idx2 * idx1)
 		public double propensityFunction0(int stateIdx, ref DiseaseState state, int[] argv) {
-			return state.state[argv[1]] * model.properties.parameters[argv[2]];
+			return state.state[argv[1]] * properties.parameters[argv[2]];
 		}
 		//Grey arrow, page 16 of the book, thing that depends on the density of infected
 		// (param * state1 * state2) / NumberOfPeopleInState
 		// (idx3 * idx2 * idx1) / Num
 		public double propensityFunction1(int stateIdx, ref DiseaseState state, int[] argv) {
-			return model.properties.parameters[argv[3]] * (((double)state.state[argv[2]] * state.state[argv[1]]) / state.numberOfPeople);
+			return properties.parameters[argv[3]] * (((double)state.state[argv[2]] * state.state[argv[1]]) / state.numberOfPeople);
 		}
 		//Movement parameter, how many of my people bump into my neighbors?
 		// (param(beta) * state1(sus)) * (neighborStuff * state2(infected))
 		// (idx1 * idx2) * (neighborStuff * idx3)
 		public double propensityFunction2(int stateIdx, ref DiseaseState state, int[] argv) {
-			int[] neighbors = model.movementModel.getNeighbors(stateIdx);
+			//cjnote could definitely make this better, thinking maybe a static array with the thread static attribute could work, because theoretically this code always runs on a different thread for every simulation
+			//So I think it would just work fine
+			int[] neighbors = movementModel.makeOutputArray();
+			movementModel.getNeighbors(stateIdx, neighbors);
 
 			double neighborFactor = 0.0f;
 			for (int q = 0; q < neighbors.Length; q++) {
-				neighborFactor += model.movementModel.getCellConnectivity(neighbors[q], stateIdx)
-				* (model.properties.readCells[neighbors[q]].state[argv[3]] / state.numberOfPeople);
+				neighborFactor += movementModel.getCellConnectivity(neighbors[q], stateIdx)
+				* (properties.readCells[neighbors[q]].state[argv[3]] / state.numberOfPeople);
 			}
-			return model.properties.parameters[argv[1]] * state.state[argv[2]] * neighborFactor;
+			return properties.parameters[argv[1]] * state.state[argv[2]] * neighborFactor;
 		}
 
 		public static int getOrderOfReaction(int reactionId) {
@@ -93,8 +94,8 @@ namespace CJSim {
 		//Returns the sum of all the propensity functions for this state
 		public double sumOfPropensityFunctions(int stateIdx, ref DiseaseState state) {
 			double res = 0.0;
-			for (int q = 0; q < model.properties.reactionCount; q++) {
-				double propFunc = dispatchPropensityFunction(ref state, stateIdx, model.properties.reactionFunctionDetails[q]);
+			for (int q = 0; q < properties.reactionCount; q++) {
+				double propFunc = dispatchPropensityFunction(ref state, stateIdx, properties.reactionFunctionDetails[q]);
 				res += propFunc;
 			}
 			return res;
@@ -102,12 +103,12 @@ namespace CJSim {
 
 		//Gets a parameter, optionally with parameter noise cjnote doesn't do that right now
 		private double getParam(int idx) {
-			return model.properties.parameters[idx];
+			return properties.parameters[idx];
 		}
 
 		protected void updateStateViaStoichOneReaction(ref DiseaseState writeState, int reaction) {
-			writeState.state[model.properties.stoichiometry[reaction].Item1] -= 1;
-			writeState.state[model.properties.stoichiometry[reaction].Item2] += 1;
+			writeState.state[properties.stoichiometry[reaction].Item1] -= 1;
+			writeState.state[properties.stoichiometry[reaction].Item2] += 1;
 		}
 	}
 }

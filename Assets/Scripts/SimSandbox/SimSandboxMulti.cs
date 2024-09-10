@@ -13,7 +13,7 @@ public class SimSandboxMulti : SimSandboxBase {
 	private void Start() {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
-		MovementModelAllConnected movementModel = new MovementModelAllConnected(4);
+		SimMovementAllConnected movementModel = new SimMovementAllConnected(4);
 		movementModel.setCellConnectivity(0, 1, 0.01f);
 		movementModel.setCellConnectivity(1, 3, 0.01f);
 		movementModel.setCellConnectivity(3, 2, 0.01f);
@@ -40,9 +40,9 @@ public class SimSandboxMulti : SimSandboxBase {
 		props.readCells[2].state[0] = 100;
 		props.readCells[3].state[0] = 100;
 
-		SimModelAlgorithm algorithm = new SimAlgGillespie();
+		SimModelAlgorithm algorithm = new SimAlgGillespie(props, movementModel);
 
-		SimModel model = new SimModel(props, algorithm, movementModel);
+		SimModel model = new SimModel(algorithm);
 
 		SimCore core = new SimCore(model, 1);
 		

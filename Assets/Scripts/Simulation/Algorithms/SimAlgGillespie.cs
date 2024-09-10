@@ -4,7 +4,7 @@ using System.Xml;
 namespace CJSim {
 	public class SimAlgGillespie : SimModelAlgorithm {
 
-		public SimAlgGillespie() : base() {
+		public SimAlgGillespie(SimModelProperties props, SimMovementModel movement) : base(props, movement) {
 			//No initialization needed
 		}
 
@@ -19,8 +19,8 @@ namespace CJSim {
 			double sumProps = sumOfPropensityFunctions(stateIdx, ref readState);
 			double sumPropsR2 = sumProps * ThreadSafeRandom.NextUniform0Inclusive1Inclusive();
 			double sum = 0.0;
-			for (int q = 0; q < model.properties.reactionCount; q++) {
-				double currProp = dispatchPropensityFunction(ref readState, stateIdx, model.properties.reactionFunctionDetails[q]);
+			for (int q = 0; q < properties.reactionCount; q++) {
+				double currProp = dispatchPropensityFunction(ref readState, stateIdx, properties.reactionFunctionDetails[q]);
 				sum += currProp;
 				if (sum >= sumPropsR2) {
 					//This is the reaction we do

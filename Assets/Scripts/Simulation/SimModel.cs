@@ -1,34 +1,30 @@
 using System;
 
 //Class representing a disease model
-//Holds information relating to disease states, algorithms, etc.
+//Currently just holds an algorithm for no reason
+//But in the future could hold all sorts of things
+//Mainly metadata about the model, things like saved colors and names for things
 
 namespace CJSim {
 	public class SimModel {
-		public SimModelProperties properties;
-
-		private SimModelAlgorithm _algorithm;
-		public SimModelAlgorithm algorithm {
+		public SimModelAlgorithm algorithm {get; private set;}
+		public SimModelProperties properties {
 			get {
-				return _algorithm;
-			}
-			set {
-				_algorithm = value;
-				value.onModelCreate(this);
+				return algorithm.properties;
 			}
 		}
-		public IMovementModel movementModel;
+		public SimMovementModel movementModel {
+			get {
+				return algorithm.movementModel;
+			}
+		}
 		
-		//Build a model from the various components
-		public SimModel(SimModelProperties properties, SimModelAlgorithm algorithm, IMovementModel movement) {
-			this.properties = properties;
-			this.movementModel = movement;
+		//Build a model
+		public SimModel(SimModelAlgorithm algorithm) {
 			this.algorithm = algorithm;
 		}
 
-
 		//Loads a model from a file (in a constructor)
-		
 		public SimModel(string filename) {
 			throw new System.NotImplementedException();
 		}
@@ -38,6 +34,7 @@ namespace CJSim {
 			throw new System.NotImplementedException();
 		}
 
+		//Loads a model from a file (in a public member function)
 		public void loadFromFile(string filename) {
 			throw new System.NotImplementedException();
 		}

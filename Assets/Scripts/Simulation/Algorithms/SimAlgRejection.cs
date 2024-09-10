@@ -24,42 +24,33 @@ namespace CJSim {
 
 		public double rangePercentage = .15;
 
-		public SimAlgRejection() : base() {
+		public SimAlgRejection(SimModelProperties props, SimMovementModel movement) : base(props, movement) {
 			//No initialization needed (in the constructor, much initialization is needed elsewhere)
-		}
-
-		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
-			return 0.0;
-		}
-
-		public override void onModelCreate(SimModel model) {
-			base.onModelCreate(model);
-
 			//Initialize the cell data array, and the structs members
-			cellData = new SimAlgRejectionCellData[model.properties.cellCount];
+			cellData = new SimAlgRejectionCellData[properties.cellCount];
 			for (int q = 0; q < cellData.Length; q++) {
-				cellData[q].stateMins = new DiseaseState(model);
-				cellData[q].stateMaxs = new DiseaseState(model);
+				cellData[q].stateMins = new DiseaseState(props);
+				cellData[q].stateMaxs = new DiseaseState(props);
 
-				cellData[q].propensityMaxs = new double[model.properties.reactionCount];
-				cellData[q].propensityMins = new double[model.properties.reactionCount];
+				cellData[q].propensityMaxs = new double[properties.reactionCount];
+				cellData[q].propensityMins = new double[properties.reactionCount];
 				//The abstract propensities would all compute to 0 based on the 0s in state mins and maxs
 				Array.Fill(cellData[q].propensityMaxs, 0.0);
 				Array.Fill(cellData[q].propensityMins, 0.0);
 			}
 
 			//Make the speciesReactionDependency graph
-			speciesReactionDependency = new int[model.properties.compartmentCount][];
+			speciesReactionDependency = new int[properties.compartmentCount][];
 			//For each species
 			List<int> currentReactions = new List<int>();
-			for (int q = 0; q < model.properties.compartmentCount; q++) {
+			for (int q = 0; q < properties.compartmentCount; q++) {
 				//for each reaction
-				for (int reactionId = 0; reactionId < model.properties.reactionCount; reactionId++) {
+				for (int reactionId = 0; reactionId < properties.reactionCount; reactionId++) {
 					//Only check stoichiometry. cjnote might not work if we added a reaction that depended on some other number
 					//Which there is already technically one that depends on the number of people in a cell, but if we never change the number of people in a cell we'll be good
 					//Or maybe could add number of people to things that we check and regen the propensities if need be, but that sounds like a lot of work that I don't want to do right now
 					//Not to mention the spatial propensity function
-					if (model.properties.stoichiometry[reactionId].Item1 == q || model.properties.stoichiometry[reactionId].Item2 == q) {
+					if (properties.stoichiometry[reactionId].Item1 == q || properties.stoichiometry[reactionId].Item2 == q) {
 						currentReactions.Add(reactionId);
 					}
 				}
@@ -67,6 +58,10 @@ namespace CJSim {
 				speciesReactionDependency[q] = currentReactions.ToArray();
 				currentReactions.Clear();
 			}
+		}
+
+		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {
+			return 0.0;
 		}
 
 		//Because of how this model works performing a single reaction is a fair amount slower than running at speed
@@ -81,7 +76,7 @@ namespace CJSim {
 			}
 
 			//check if the populations are still in the bounds
-			for (int q = 0; q < model.properties.compartmentCount; q++) {
+			for (int q = 0; q < properties.compartmentCount; q++) {
 				//If out of bounds
 				if (readState[q] < cellData[stateIdx].stateMins[q] || readState[q] > cellData[stateIdx].stateMaxs[q]) {
 					//Regenerate the bounds, with rounding because the populations will only be integers for this model
@@ -95,8 +90,8 @@ namespace CJSim {
 					//that reaction will get regened twice and only the second regen will be correct and up to date, will have wasted time on the first one
 					for (int i = 0; i < speciesReactionDependency[q].Length; i++) {
 						int reactionID = speciesReactionDependency[q][i];
-						cellData[stateIdx].propensityMaxs[reactionID] = dispatchPropensityFunction(ref cellData[stateIdx].stateMaxs, stateIdx, model.properties.reactionFunctionDetails[reactionID]);
-						cellData[stateIdx].propensityMins[reactionID] = dispatchPropensityFunction(ref cellData[stateIdx].stateMins, stateIdx, model.properties.reactionFunctionDetails[reactionID]);
+						cellData[stateIdx].propensityMaxs[reactionID] = dispatchPropensityFunction(ref cellData[stateIdx].stateMaxs, stateIdx, properties.reactionFunctionDetails[reactionID]);
+						cellData[stateIdx].propensityMins[reactionID] = dispatchPropensityFunction(ref cellData[stateIdx].stateMins, stateIdx, properties.reactionFunctionDetails[reactionID]);
 					}
 				}
 				//Compute total propensity upper bound cjnote not sure if this should go inside the if or not
@@ -123,7 +118,7 @@ namespace CJSim {
 					//Select minimum uMicro
 					double umicroSelectionSum = 0.0;
 					double r1a0Max = ThreadSafeRandom.NextUniform0Exclusive1Exclusive() * cellData[stateIdx].propensitySumMax;
-					for (int q = 0; q < model.properties.reactionCount; q++) {
+					for (int q = 0; q < properties.reactionCount; q++) {
 						umicroSelectionSum += cellData[stateIdx].propensityMaxs[q];
 						if (umicroSelectionSum > r1a0Max) {
 							uMicro = q;
@@ -136,7 +131,7 @@ namespace CJSim {
 					if (r2 <= (cellData[stateIdx].propensityMins[uMicro] / cellData[stateIdx].propensityMaxs[uMicro])) {
 						accepted = true;
 					} else {
-						double auMicro = dispatchPropensityFunction(ref fakeRead, stateIdx, model.properties.reactionFunctionDetails[uMicro]);
+						double auMicro = dispatchPropensityFunction(ref fakeRead, stateIdx, properties.reactionFunctionDetails[uMicro]);
 						if (r2 <= (auMicro / cellData[stateIdx].propensityMaxs[uMicro])) {
 							accepted = true;
 						}

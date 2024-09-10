@@ -10,7 +10,7 @@ public class SimSandbox : SimSandboxBase {
 	private void Start() {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
-		MovementModelNone movementModel = new MovementModelNone();
+		SimMovementModel movementModel = new SimMovementNone();
 
 		SimModelProperties props = new SimModelProperties(3, 2, 2, 1);
 		//S,I,R,,,S->I,I->R,,,B,R
@@ -27,9 +27,7 @@ public class SimSandbox : SimSandboxBase {
 		props.readCells[0].state[1] = 1;
 		props.readCells[0].state[2] = 0;
 
-		SimModelAlgorithm algorithm = new SimAlgRejection();
-
-		SimModel model = new SimModel(props, algorithm, movementModel);
+		SimModel model = new SimModel(new SimAlgRejection(props, movementModel));
 
 		SimCore core = new SimCore(model, 1);
 		

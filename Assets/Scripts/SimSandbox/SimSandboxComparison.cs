@@ -16,7 +16,7 @@ public class SimSandboxComparison :  SimSandboxBase {
 	private void Start() {
 		Application.targetFrameRate = 60;
 		//Make a basic simulation
-		MovementModelNone movementModel = new MovementModelNone();
+		SimMovementModel movementModel = new SimMovementNone();
 
 		SimModelProperties props = new SimModelProperties(3, 2, 2, 1);
 		//S,I,R,,,S->I,I->R,,,B,R
@@ -33,8 +33,8 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.readCells[0].state[1] = 5;
 		props.readCells[0].state[2] = 0;
 
-		simulation1 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgRejection(), movementModel), 1));
-		simulation2 = new Simulation(new SimCore(new SimModel(new SimModelProperties(props), new SimAlgGillespie(), movementModel), 1));
+		simulation1 = new Simulation(new SimCore(new SimModel(new SimAlgRejection(new SimModelProperties(props), movementModel)), 1));
+		simulation2 = new Simulation(new SimCore(new SimModel(new SimAlgGillespie(new SimModelProperties(props), movementModel)), 1));
 
 		initChart(chart1);
 		initChart(chart2);
@@ -101,7 +101,7 @@ public class SimSandboxComparison :  SimSandboxBase {
 		for (int q = 0; q < runsToDo; q++) {
 			simulation.core.tickSimulation(1e6);
 			//Because this will be here for eveyr simulation no matter what the amount of time it takes should be unimportant
-			simulation.model.properties = new SimModelProperties(originalState);
+			simulation.model.algorithm.properties = new SimModelProperties(originalState);
 		}
 		stopwatch.Stop();
 

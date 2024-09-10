@@ -1,31 +1,35 @@
 
 namespace CJSim {
 	//No movement between anything, useful for 1 bucket simulations
-	public class MovementModelNone : IMovementModel {
+	public class SimMovementNone : SimMovementModel {
 		//Get the amount of cell connectivity
-		public float getCellConnectivity(int idSource, int idDest) {
-			return 0.0f;
+		public override double getCellConnectivity(int idSource, int idDest) {
+			return 0.0;
 		}
 
 		//Get a list of this cells neighbors
 		//Not sure how bad the performance is on the array allocation
-		public int[] getNeighbors(int idx) {
+		public override void getNeighbors(int idx, int[] output) {
+			return;
+		}
+
+		public override int[] makeOutputArray() {
 			return new int[0];
 		}
 	}
 
-	//Useful for very small very interconnected simulations, largely for testing purposes
-	public class MovementModelAllConnected : IMovementModel {
+	//Useful for very small very interconnected simulations, largely for easy testing
+	public class SimMovementAllConnected : SimMovementModel {
 
-		private float[] connectivities;
+		private double[] connectivities;
 		private int[] neighborRet;
 		private int m_cellCount = 0;
 
-		public MovementModelAllConnected(int cellCount) {
+		public SimMovementAllConnected(int cellCount) {
 			//A bit wasteful because each entry includes itself which isn't needed
 			//But this class is just for testing so shouldn't matter
-			connectivities = new float[cellCount * cellCount];
-			System.Array.Fill<float>(connectivities, 0.0f);
+			connectivities = new double[cellCount * cellCount];
+			System.Array.Fill<double>(connectivities, 0.0);
 			m_cellCount = cellCount;
 
 			//Standard return for the neighbors because every cell is connected
@@ -41,16 +45,19 @@ namespace CJSim {
 		}
 
 		//Get the amount of cell connectivity
-		public float getCellConnectivity(int idSource, int idDest) {
+		public override double getCellConnectivity(int idSource, int idDest) {
 			return connectivities[(idSource * m_cellCount) + idDest];
 		}
 
 		//Get a list of this cells neighbors
-		//cjnote not sure how bad the performance is on the array allocation
-		public int[] getNeighbors(int idx) {
+		public override void getNeighbors(int idx, int[] output) {
+			for (int q = 0; q < m_cellCount; q++) {
+				output[q] = q;
+			}
+		}
+
+		public override int[] makeOutputArray() {
 			return neighborRet;
 		}
 	}
 }
-
-
