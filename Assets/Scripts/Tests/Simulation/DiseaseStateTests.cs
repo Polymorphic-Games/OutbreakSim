@@ -81,4 +81,22 @@ public class DiseaseStateTests {
 			Assert.AreEqual(state2[q], q+10);
 		}
 	}
+
+	[Test]
+	public void DiseaseStateTests_Operators() {
+		DiseaseState state1 = new DiseaseState(2);
+		DiseaseState state2 = new DiseaseState(2);
+		state1[0] = 1;
+		state1[1] = 2;
+
+		state2[0] = 10;
+		state2[1] = 20;
+
+		DiseaseState ret = state2 - state1;
+		Assert.AreEqual(9, ret[0]);
+		Assert.AreEqual(18, ret[1]);
+		ret = state1 + state2;
+		Assert.AreEqual(11, ret[0]);
+		Assert.AreEqual(22, ret[1]);
+	}
 }

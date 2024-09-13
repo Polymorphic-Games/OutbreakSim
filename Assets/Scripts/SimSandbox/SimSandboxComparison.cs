@@ -33,9 +33,9 @@ public class SimSandboxComparison :  SimSandboxBase {
 		props.readCells[0].state[1] = 5;
 		props.readCells[0].state[2] = 0;
 
-		simulation1 = new Simulation(new SimCore(new SimModel(new SimAlgRejection(new SimModelProperties(props), movementModel)), 1));
-		simulation2 = new Simulation(new SimCore(new SimModel(new SimAlgGillespie(new SimModelProperties(props), movementModel)), 1));
-
+		simulation1 = new Simulation(new SimCore(new SimModel(new SimAlgDeterministic(new SimModelProperties(props), movementModel, step)), 1));
+		//simulation2 = new Simulation(new SimCore(new SimModel(new SimAlgGillespie(new SimModelProperties(props), movementModel)), 1));
+		simulation2 = new Simulation(new SimCore(new SimModel(new SimAlgHybrid(props, movementModel, new SimAlgDeterministic(props, movementModel, step), new SimAlgGillespie(props, movementModel))), 1));
 		initChart(chart1);
 		initChart(chart2);
 		chart2.DataSource.GetCategory("susceptible").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color -= new Color(0,0,0,0.5f);

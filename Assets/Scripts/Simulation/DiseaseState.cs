@@ -59,6 +59,7 @@ namespace CJSim {
 			timeSimulated = 0.0;
 		}
 
+		//Tostring function, largely for easy debugging purposes
 		public override string ToString() {
 			if (stateCount <= 0) {
 				return "";
@@ -78,7 +79,41 @@ namespace CJSim {
 					state[q] = other.state[q];
 				}
 				timeSimulated = other.timeSimulated;
+			} else {
+				throw new System.Exception("Disease states must have same state count");
 			}
 		}
+
+		//Addition and subtraction operators
+		public static DiseaseState operator -(DiseaseState a, DiseaseState b) {
+			DiseaseState ret = new DiseaseState(a);
+			if (a.stateCount != b.stateCount) {
+				throw new System.Exception("Disease States must have the same number of states for subtraction");
+			} else {
+				for (int q = 0; q < ret.stateCount; q++) {
+					ret.state[q] -= b.state[q];
+				}
+			}
+			return ret;
+		}
+		public static DiseaseState operator +(DiseaseState a, DiseaseState b) {
+			DiseaseState ret = new DiseaseState(a);
+			if (a.stateCount != b.stateCount) {
+				throw new System.Exception("Disease States must have the same number of states for subtraction");
+			} else {
+				for (int q = 0; q < ret.stateCount; q++) {
+					ret.state[q] += b.state[q];
+				}
+			}
+			return ret;
+		}
+
+		//Round the numbers in the disease state
+		public void roundNumbers() {
+			for (int q = 0; q < stateCount; q++) {
+				state[q] = (int)(state[q] + .5);
+			}
+		}
+		
 	}
 }

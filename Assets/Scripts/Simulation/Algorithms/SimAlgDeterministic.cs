@@ -1,9 +1,7 @@
 
 namespace CJSim {
-	public class SimAlgDeterministic : SimModelAlgorithm {
-		public double timestep {get; set;}
-		public SimAlgDeterministic(SimModelProperties props, SimMovementModel movement, double step) : base(props, movement) {
-			timestep = step;
+	public class SimAlgDeterministic : SimAlgApproximate {
+		public SimAlgDeterministic(SimModelProperties props, SimMovementModel movement, double step) : base(props, movement, step) {
 		}
 
 		public override double getNextReactionTime(int stateIdx, ref DiseaseState readState) {

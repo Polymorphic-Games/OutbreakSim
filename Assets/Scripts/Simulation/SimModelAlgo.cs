@@ -88,7 +88,12 @@ namespace CJSim {
 		// Helper Functions \\
 
 		public double dispatchPropensityFunction(ref DiseaseState readState, int stateIdx, int[] argv) {
-			return reactionFuncTypes[argv[0]](stateIdx, ref readState, argv);
+			double ret = reactionFuncTypes[argv[0]](stateIdx, ref readState, argv);
+			//cjnote this is debug only plz remove
+			if (ret < 0) {
+				ThreadLogger.Log($"dispatchPropensityFunction is negative somehow, state is {readState}, at prop function {argv[0]}");
+			}
+			return ret;
 		}
 
 		//Returns the sum of all the propensity functions for this state
