@@ -4,6 +4,13 @@ using UnityEditor.Compilation;
 
 //https://doi.org/10.1002/wsbm.1459
 //Basically just algorithm 6
+
+//DO NOTE: Doesn't work. Can kinda work sometimes but quite buggy
+//Not too sure how to tame that issue
+//And frankly, Justin, I have like an hour left in the studio I need to do other things
+//This thing is too slow anyway, it's just a proof of concept
+//To actually get speed and accuracy gains you should do the model that the paper is actually about
+//Really all you gotta do is combine algorithm 6 (this class) and the rejection model that already works and bob's your uncle you got a working thing
 namespace CJSim {
 	public class SimAlgHybrid : SimModelAlgorithm {
 		
@@ -48,7 +55,6 @@ namespace CJSim {
 
 			//If there are slow reactions
 			if (slowAlgo.properties.reactionCount > 0) {
-				ThreadLogger.Log("there are " + slowAlgo.properties.reactionCount + " slow reactions");
 				//Do only a single slow reaction
 				slowAlgo.performSingleReaction(stateIdx, ref readState, ref slowWrite);
 				//And do as many fast reactions as needed to catch up
@@ -56,25 +62,23 @@ namespace CJSim {
 					if (double.IsFinite(slowWrite.timeSimulated)) {
 						DiseaseState fakeRead = new DiseaseState(readState);
 						while (fastWrite.timeSimulated + fastAlgo.timestep < slowWrite.timeSimulated) {
-							ThreadLogger.Log("While loop doing fast algo to catch up because time simmed is " + slowWrite.timeSimulated);
 							fastAlgo.performSingleReaction(stateIdx, ref fakeRead, ref fastWrite);
 							fakeRead.setTo(fastWrite);
 						}
 						if (fastWrite.timeSimulated < slowWrite.timeSimulated) {
 							double tmp = fastAlgo.timestep;
 							fastAlgo.timestep = slowWrite.timeSimulated - fastWrite.timeSimulated;
-							ThreadLogger.Log("Doing one more fast tick at " + fastAlgo.timestep);
 							fastAlgo.performSingleReaction(stateIdx, ref fakeRead, ref fastWrite);
 							fastAlgo.timestep = tmp;
 						}
 					} else {
 
-						ThreadLogger.Log("Only doing the fast tick because slow is infinite");
 						fastAlgo.performSingleReaction(stateIdx, ref readState, ref fastWrite);
 					}
+				} else {
+					fastWrite.timeSimulated = slowWrite.timeSimulated;
 				}
 			} else {
-				ThreadLogger.Log("Only doing the fast tick");
 				fastAlgo.performSingleReaction(stateIdx, ref readState, ref fastWrite);
 			}
 
@@ -84,7 +88,6 @@ namespace CJSim {
 
 			DiseaseState slowDifferential = slowWrite - readState;
 			fastWrite.roundNumbers();
-			ThreadLogger.Log("Fast write is " + fastWrite + " and slow is " + slowWrite + " and readState is " + readState + " and differential is " + slowDifferential);
 			fastWrite += slowDifferential;
 			writeState.setTo(fastWrite);
 		}
@@ -93,18 +96,14 @@ namespace CJSim {
 		private void partitionReactions(int stateIdx, ref DiseaseState readState) {
 			List<int> fastReactions = new List<int>();
 			List<int> slowReactions = new List<int>();
-			ThreadLogger.Log("    The partition:");
 			//For each reaction
 			for (int idxReaction = 0; idxReaction < properties.reactionCount; idxReaction++) {
 				double aj = dispatchPropensityFunction(ref readState, stateIdx, properties.reactionFunctionDetails[idxReaction]);
 				if (aj * fastAlgo.timestep < 1.0) {
-					ThreadLogger.Log($"    reaction {idxReaction} is slow because {aj} * {fastAlgo.timestep} < 1.0");
 					slowReactions.Add(idxReaction);
 				} else if (readState.state[properties.stoichiometry[idxReaction].Item1] < slowPopCutoff || readState.state[properties.stoichiometry[idxReaction].Item2] < slowPopCutoff) {
-					ThreadLogger.Log($"    reaction {idxReaction} is slow because {readState.state[properties.stoichiometry[idxReaction].Item1]} || {readState.state[properties.stoichiometry[idxReaction].Item2]} < 10");
 					slowReactions.Add(idxReaction);
 				} else {
-					ThreadLogger.Log($"    reaction {idxReaction} is fast");
 					fastReactions.Add(idxReaction);
 				}
 			}
@@ -125,7 +124,6 @@ namespace CJSim {
 					cellData[stateIdx].slowProperties.reactionFunctionDetails[q][i] = properties.reactionFunctionDetails[slowReactions[q]][i];
 				}
 			}
-			ThreadLogger.Log("    End partition");
 		}
 	}
 }

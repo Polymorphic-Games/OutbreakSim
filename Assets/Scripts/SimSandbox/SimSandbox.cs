@@ -23,15 +23,11 @@ public class SimSandbox : SimSandboxBase {
 		props.parameters[0] = 1.0f;
 		props.parameters[1] = 0.1f;
 
-		props.readCells[0].state[0] = 10;
-		props.readCells[0].state[1] = 1;
+		props.readCells[0].state[0] = 20;
+		props.readCells[0].state[1] = 2;
 		props.readCells[0].state[2] = 0;
 
-		SimModel model = new SimModel(new SimAlgRejection(props, movementModel));
-
-		SimCore core = new SimCore(model, 1);
-		
-		simulation = new Simulation(core);
+		simulation = new Simulation(new SimCore(new SimModel(new SimAlgHybrid(props, movementModel, new SimAlgDeterministic(props, movementModel, step), new SimAlgGillespie(props, movementModel))), 1));
 
 		initChart(chart);
 	}
@@ -52,6 +48,8 @@ public class SimSandbox : SimSandboxBase {
 				
 				lastTime = simulation.model.properties.readCells[0].timeSimulated;
 				time += step;
+				//simulation.model.algorithm.performSingleReaction(0, ref simulation.model.algorithm.properties.readCells[0], ref simulation.model.algorithm.properties.writeCells[0]);
+				//simulation.model.algorithm.properties.readCells[0].setTo(simulation.model.algorithm.properties.writeCells[0]);
 				simulation.core.tickSimulation(time);
 				dumpSim();
 			}
