@@ -377,7 +377,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &443768995
 RectTransform:
   m_ObjectHideFlags: 0
@@ -722,7 +722,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &960826698
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1155,6 +1155,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   chart: {fileID: 443768997}
+  simulation:
+    clock:
+      desiredSimSpeed: 0
+  props:
+    parameters: []
+    compartmentCount: 0
+    readCells: []
+    writeCells: []
 --- !u!1 &1691266028
 GameObject:
   m_ObjectHideFlags: 0

@@ -15,8 +15,10 @@ public abstract class SimSandboxBase : MonoBehaviour {
 		chart.DataSource.GetCategory("rec").GetVisualFeature<GraphLineVisualFeature>("Graph Line-0").LineMaterial.color = Color.green;
 	}
 
-	protected virtual void updateChart(DataSeriesChart chart, DiseaseState state) {
-		if (double.IsInfinity(state.timeSimulated)) {
+	protected virtual void updateChart(DataSeriesChart chart, DiseaseState state) 
+	{
+		if (double.IsInfinity(state.timeSimulated)) 
+		{
 			return;
 		}
 		
