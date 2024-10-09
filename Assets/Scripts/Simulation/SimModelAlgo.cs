@@ -72,7 +72,8 @@ namespace CJSim
         // (idx1 * idx2) * (neighborStuff * idx3)
         public double propensityFunction2(int stateIdx, ref DiseaseState state, int[] argv)
         {
-            //cjnote could definitely make this better, thinking maybe a static array with the thread static attribute could work, because theoretically this code always runs on a different thread for every simulation
+            //cjnote could definitely make this better, thinking maybe a static array with the thread static attribute could work,
+            //because theoretically this code always runs on a different thread for every simulation
             //So I think it would just work fine
             int[] neighbors = movementModel.makeOutputArray();
             movementModel.getNeighbors(stateIdx, neighbors);

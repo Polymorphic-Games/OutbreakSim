@@ -17,6 +17,7 @@ namespace CJSim
             double sumProps = sumOfPropensityFunctions(stateIdx, ref readState);
             return ((1.0 / sumProps) * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive()));
         }
+
         //Perform reactions, if the model cares about the time you can include it here
         public override void performSingleReaction(int stateIdx, ref DiseaseState readState,
             ref DiseaseState writeState, double timestep = 0.0)
@@ -39,6 +40,7 @@ namespace CJSim
 
                     //this is the line that ends up putting the time simulated at infinity when sumProps is at 0
                     //divide by 0 error. :(
+
                     double step = timestep == 0.0 ? ((1.0 / sumProps) 
                         * Math.Log(1.0 / ThreadSafeRandom.NextUniform0Inclusive1Inclusive())) : timestep;
                     writeState.timeSimulated += step;

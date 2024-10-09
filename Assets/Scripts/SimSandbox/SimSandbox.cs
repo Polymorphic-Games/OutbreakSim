@@ -31,7 +31,7 @@ public class SimSandbox : SimSandboxBase
         props.parameters[1] = 0.1f;
 
         props.readCells[0].state[0] = 20000;
-        props.readCells[0].state[1] = 2;
+        props.readCells[0].state[1] = 10;
         props.readCells[0].state[2] = 0;
 
         simulation = new Simulation(
@@ -55,7 +55,7 @@ public class SimSandbox : SimSandboxBase
 
         Profiler.BeginSample("Simulation Update");
 
-            for (int q = 0; q < (Input.GetKeyDown(KeyCode.N) ? 10 : 1); q++)
+            for (int q = 0; q < 1; q++)
             {
                 //With gillespie the very last reaction will be at infinity time it's rough
                 if (simulation.model.properties.readCells[0].timeSimulated - lastTime >= 1000.0f)
@@ -63,9 +63,9 @@ public class SimSandbox : SimSandboxBase
                     break;
                 }
 
-            //Profiler.BeginSample("Update Chart");
-            //    updateChart(chart, simulation.model.properties.readCells[0]);
-            //Profiler.EndSample();
+            Profiler.BeginSample("Update Chart");
+                updateChart(chart, simulation.model.properties.readCells[0]);
+            Profiler.EndSample();
 
                 lastTime = simulation.model.properties.readCells[0].timeSimulated;
                 time += step;
